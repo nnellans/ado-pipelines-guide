@@ -2,15 +2,22 @@
 
 It's important to know that this is a live document. Some of the sections are still a work in progress. I will be continually updating it over time.
 
-Lastly, Azure DevOps has two different types of Pipelines.  First, there is the "*Classic UI*" Pipelines that come in both Build and Release forms.  Second, there is the new type of Pipeline that is created using 100% YAML code.  This guide will only focus on the modern YAML Pipelines.
+Azure DevOps has two different types of Pipelines.  First, there is the "*Classic UI*" Pipelines, these come in both Build and Release forms.  Second, there are the YAML Pipelines that are defined strictly in code.  This guide will only focus on the modern YAML Pipelines.
 
 ---
 
+# High-Level Pipeline Structure
+
+There are two main types of information defined in a YAML Pipeline:
+1. Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
+2. The actual work being done by the Pipeline.  There are three different ways you can define the work:
+  - The standard way by defining Stages, Jobs, and Steps.  This way will always work, no matter how many Stages or Jobs you have.
+  - If you have one Stage with multiple Jobs, then you can omit the 'Stages' layer.  So, all you need to define is Jobs and Steps.
+  - If you have one Stage with one Job, then you omit both the 'Stages' and 'Jobs' layer.  So, all you need to define is Steps.
+
+
 Triggers
 - Tells the Pipeline when to run
-
-Pipelines
-- Pipelines are comprised of one or more Stages
 
 Stages
 - A logical boundary that can be used to mark seperation of concerns (one example being Build, QA, Production)
