@@ -11,13 +11,110 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 There are two main types of information defined in a YAML Pipeline:
 1. Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
 2. The actual work being done by the Pipeline.  There are three different ways you can define the work:
-  - The standard way by defining Stages, Jobs, and Steps.  This way will always work, no matter how many Stages or Jobs you have.
+  - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
     ![pipeline option 1](/images/pipeline-option1-stages.png)
-  - If you have one Stage with multiple Jobs, then you can omit the 'Stages' layer.  So, all you need to define is Jobs and Steps.
+  - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
     ![pipeline option 2](/images/pipeline-option2-jobs.png)
-  - If you have one Stage with one Job, then you omit both the 'Stages' and 'Jobs' layer.  So, all you need to define is Steps.
+  - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
     ![pipeline option 3](/images/pipeline-option3-steps.png)
 
+---
+
+# Pipeline-level information
+
+Let's start by going over the common fields that can be defined at the root of the Pipeline, they are:
+- name
+- appendCommitMessageToRunTime
+- trigger
+- pr
+- schedules
+- parameters
+- variables
+- pool
+- resources
+- lockBehavior
+
+## name
+- Specifies the name for each "Run" of this pipeline
+- Not to be confused with the actual name of the pipeline itself (which is defined in the Azure DevOps UI)
+- This expects a string value, and expressions are allowed
+- This field is optional.  The default name of each run will be in this format: `yyyymmdd.xx` where:
+  - `yyyymmdd` is the current date
+  - `xx` is an iterator, which starts at `1` and increments with each run of the pipeline
+
+## appendCommitMessageToRunName
+- Specifies if the latest Git commit message is appended to the end of the run name (specified above)
+- This field is optional.  The default is `true`
+- This expects a boolean value, and accepts any of the following: `true`, `y`, `yes`, `on`, `false`, `n`, `no`, `off`
+
+## trigger
+- Specifies the Continuous Integration (CI) triggers that will be used to automatically start a run of this pipeline
+- This looks for pushes to branches or tags on the repo where the pipeline's YAML file is stored
+- This field is optional.  By default, a push to any branch of the repo will cause a pipeline run to be triggered
+- You cannot use variables in triggers, as variables are not evaluated until after the pipeline triggers
+- triggers are not supported inside template files
+- There are 3 ways to define CI triggers:
+
+### Option 1 - Disable CI Triggers
+```yaml
+trigger: 'none'
+```
+- Pushes to branches will not trigger a pipeline run
+
+### Option 2 - Simplified Branch Syntax
+```yaml
+trigger:
+- main
+- feature/*
+```
+- This lets you specify a list of branch names, and wildcards are supported
+- Any push to these branches will trigger a pipeline run
+
+### Option 3 - Full Syntax
+```yaml
+trigger:
+  batch: boolean
+  branches:
+    include:
+    - main
+    exclude:
+    - feature/*
+    - release/*
+  paths:
+    include:
+    - docs/readme.md
+    exclude:
+    - .gitignore
+    - docs
+  tags:
+    include:
+    - v2.*
+    exclude:
+    - v3.0
+```
+- If you specify both `branches` and `tags` then both will be evaluated, if at least one of them matches, then the pipeline will be triggered
+- `paths` cannot be used by itself, `paths` is only used to modify `branches`
+- Paths in Git are case-sensitive
+- Enabling the `batch` option means only one instance of the pipeline will run at a time.  While the second run of the pipeline is waiting for its turn, it will batch up all of the changes that have been made while its been waiting, and when its finally able to run it will apply all of those changes at once
+
+
+
+
+
+
+1. stages
+2. jobs
+3. steps
+  - strategy
+  - continueOnError
+  - container
+  - services
+  - workspace
+4. extends
+
+
+
+---
 Triggers
 - Tells the Pipeline when to run
 
