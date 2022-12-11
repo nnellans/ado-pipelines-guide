@@ -214,11 +214,11 @@ parameters:
 
 # variables
 - This lets you specify variables that can be used throughout your pipeline
-- `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels)
+- `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels though)
 
 General info:
 - Variable names must contain only letters, numbers, periods, or underscores
-  - Variable names must not begin with any of the following words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
+  - Variable names must not begin with the following words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
 - Variables don't have a type, all variables are stored as strings
 - Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
 
