@@ -214,7 +214,7 @@ parameters:
 
 # variables
 - This lets you specify variables that can be used throughout your pipeline
-- `variables` is optional, and if omitted, your pipeline simply won't use any variables
+- `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-variables (they could still be defined at other levels)
 
 General info:
 - Variables don't have a type, all variables are stored as strings
