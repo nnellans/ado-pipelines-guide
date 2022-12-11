@@ -189,7 +189,7 @@ schedules:
 - `parameters` listed at the pipeline-level are considered 'Runtime Parameters'
 - When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for each parameter
 - `parameters` is optional, and if omitted, your pipeline simply won't use any Runtime Parameters
-- Parameters are expanded early in processing a pipeline run, so not all variables will be available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
+- Parameters are expanded early in the processing of a pipeline run, so not all variables will be available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
 Syntax
 ```yaml
@@ -204,7 +204,7 @@ parameters:
 ```
 - `name` is required
   - This is what you use to reference this parameter inside your YAML code
-- 'displayName` is optional, the default is what is specified for `name`
+- `displayName` is optional, the default is what is specified for `name`
   - This is a human-readable name you can give to the parameter
   - This is how the parameters appears in the Azure DevOps UI when you run the pipeline manually
 - `type` is required, possible options are:
@@ -213,6 +213,12 @@ parameters:
   - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
 - If a Parameter is defined, it cannot be optional, meaning you must provide a value when running the pipeline manually, or it must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
 
+---
+
+# variables
+- 
+
+---
 
 1. stages
 2. jobs
