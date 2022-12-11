@@ -222,12 +222,13 @@ General info:
 - Variables don't have a type, all variables are stored as strings
 - Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
 
-Variables can be defined at multiple places throughout your pipeline (in order from least specific to most specific):
-(When you define a variable with the same name in multiple places, the most specific place wins)
-  - Azure DevOps UI
-  - YAML pipeline-level (what we're discussing here)
-  - YAML stage-level
-  - YAML job-level
+Variables can be defined at multiple places throughout your pipeline:
+  - When you define a variable with the same name in multiple places, the most specific place wins
+  - The levels in order from least specific to most specific:
+    - Azure DevOps UI
+    - YAML pipeline-level (what we're discussing here)
+    - YAML stage-level
+    - YAML job-level
 
 Azure DevOps comes with many system variables, these have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
