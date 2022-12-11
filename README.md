@@ -25,29 +25,29 @@ There are two main types of information defined in a YAML Pipeline:
 Let's start by going over the common fields that can be defined at the root of the Pipeline, they are:
 - [name](#name)
 - [appendCommitMessageToRunTime](#appendcommitmessagetorunname)
-- [trigger](#trigger)
-- [pr](#pr)
-- [schedules](#schedules)
-- parameters
+- [trigger](#trigger-aka-ci-trigger)
+- [pr](#pr-aka-pr-trigger)
+- [schedules](#schedules-aka-scheduled-trigger)
+- [parameters](#parameters-aka-runtime-parameters)
 - variables
 - pool
 - resources
 - lockBehavior
 
 ## name
-- Specifies the name for each "Run" of this pipeline
+- Specifies the name to use for each "Run" of this pipeline
 - Not to be confused with the actual name of the pipeline itself (which is defined in the Azure DevOps UI)
-- This expects a string value, and expressions are allowed
 - This field is optional.  The default name of each run will be in this format: `yyyymmdd.xx` where:
   - `yyyymmdd` is the current date
   - `xx` is an iterator, which starts at `1` and increments with each run of the pipeline
+- This expects a string value, and expressions are allowed
 
 ## appendCommitMessageToRunName
 - Specifies if the latest Git commit message is appended to the end of the run name (specified above)
 - This field is optional.  The default is `true`
-- This expects a boolean value, and accepts any of the following: `true`, `y`, `yes`, `on`, `false`, `n`, `no`, `off`
+- This expects a boolean value.  In Azure DevOps YAML, a boolean means any of the following: `true`, `y`, `yes`, `on`, `false`, `n`, `no`, `off`
 
-## trigger
+## trigger (aka CI Trigger)
 - Specifies the Continuous Integration (CI) triggers that will be used to automatically start a run of this pipeline
 - This looks for pushes to branches or tags on the repo where the pipeline's YAML file is stored
 - This field is optional.  By default, a push to any branch of the repo will cause a pipeline run to be triggered
@@ -68,7 +68,7 @@ trigger:
 - feature/*
 ```
 - This lets you specify a list of branch names, and wildcards are supported
-- Any push to these branches will trigger a pipeline run
+- Any push to any of these branches will trigger a pipeline run
 
 ### Option 3 - Full Syntax
 ```yaml
@@ -93,19 +93,20 @@ trigger:
     exclude:
     - v3.0
 ```
-- If you specify both `branches` and `tags` then both will be evaluated, if at least one of them matches, then the pipeline will be triggered
-- `paths` is optional, and cannot be used by itself, `paths` is only used to modify `branches`
-  - Paths in Git are case-sensitive, and wildcards are supported
 - `batch` is optional, the default is `false`
   - Enabling the `batch` option means only one instance of the pipeline will run at a time.  While the second run of the pipeline is waiting for its turn, it will batch up all of the changes that have been made while its been waiting, and when its finally able to run it will apply all of those changes at once
+- If you specify both `branches` and `tags` then both will be evaluated, if at least one of them matches, then the pipeline will be triggered
+- `paths` is optional, the default is the root of the repo
+  - `paths` cannot be used by itself, it can only be used in combination with `branches`
+  - Paths in Git are case-sensitive, and wildcards are supported
 
 ---
 
-## pr
+## pr (aka PR Trigger)
 - Specifies the Pull Request (PR) triggers that will be used to automatically start a run of this pipeline
 - This looks for Pull Requests that are opened on branches of the repo where the pipeline's YAML file is stored
-- YAML PR triggers are only supported for GitHub and BitBucket Cloud
 - This field is optional.  By default, a PR opened on any branch of the repo will cause a pipeline run to be triggered
+- YAML PR triggers are only supported for GitHub and BitBucket Cloud
 - You cannot use variables in `pr`, as variables are not evaluated until after the pipeline triggers
 - `pr` is not supported inside template files
 - There are 3 ways to define PR triggers:
@@ -123,7 +124,7 @@ pr:
 - feature/*
 ```
 - This lets you specify a list of branch names, and wildcards are supported
-- Any push to these branches will trigger a pipeline run
+- Any push to any of these branches will trigger a pipeline run
 
 ### Option 3 - Full Syntax
 ```yaml
@@ -144,16 +145,17 @@ pr:
     - .gitignore
     - docs
 ```
-- `paths` is optional, and cannot be used by itself, `paths` is only used to modify `branches`
-  - Paths in Git are case-sensitive, and wildcards are supported
 - `autoCancel` is optional, the default is `true`
   - If more updates are made to the same PR, should in-progress validation runs be canceled?
 - `drafts` is optional, the default is `true`
   - Will 'draft' PRs cause the trigger to fire?
+- `paths` is optional, the default is the root of the repo
+  - `paths` cannot be used by itself, it can only be used in combination with `branches`
+  - Paths in Git are case-sensitive, and wildcards are supported
 
 ---
 
-## schedules
+## schedules (aka Scheduled Trigger)
 - Scheduled triggers configure a pipeline to run on a schedule, which is defined using cron syntax
 - `schedules` is optional, by default no scheduled runs will occur
 - Schedules can be defined in two places: the Azure DevOps UI and in YAML.  If schedules are defined in both places, the ones in Azure DevOps UI will take precedence.
@@ -181,7 +183,35 @@ schedules:
 - `always` is optional, the default is `false`
   - Run the scheduled pipeline, even if there were no source code changes since the last scheduled run?
 
+---
 
+# parameters (aka Runtime Parameters)
+- `parameters` listed at the pipeline-level are considered 'Runtime Parameters'
+- When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for each parameter
+- `parameters` is optional, and if omitted, your pipeline simply won't use any Runtime Parameters
+- Parameters are expanded early in processing a pipeline run, so not all variables will be available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
+
+Syntax
+```yaml
+parameters:
+- name: string
+  displayName: string
+  type: string
+  default: 'someValue'
+  values:
+  - 'first allowed value'
+  - 'second allowed value'
+```
+- `name` is required
+  - This is what you use to reference this parameter inside your YAML code
+- 'displayName` is optional, the default is what is specified for `name`
+  - This is a human-readable name you can give to the parameter
+  - This is how the parameters appears in the Azure DevOps UI when you run the pipeline manually
+- `type` is required, possible options are:
+  - `boolean`, `number`, `object`, `string`
+  - `environment`, `filePath`, `pool`, `secureFile`, `serviceConnection`
+  - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
+- If a Parameter is defined, it cannot be optional, meaning you must provide a value when running the pipeline manually, or it must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
 
 
 1. stages
