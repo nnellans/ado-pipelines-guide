@@ -23,11 +23,11 @@ There are two main types of information defined in a YAML Pipeline:
 # Pipeline-level information
 
 Let's start by going over the common fields that can be defined at the root of the Pipeline, they are:
-- name
-- appendCommitMessageToRunTime
-- trigger
-- pr
-- schedules
+- [name](#name)
+- [appendCommitMessageToRunTime](#appendcommitmessagetorunname)
+- [trigger](#trigger)
+- [pr](#pr)
+- [schedules](#schedules)
 - parameters
 - variables
 - pool
