@@ -227,7 +227,7 @@ Variables can be defined at multiple places throughout your pipeline (in order f
   - YAML pipeline-level (what we're discussing here)
   - YAML stage-level
   - YAML job-level
-- When you define a variable with the same name in multiple places, the most specific place wins.  For example, a job-level variable will win over a stage-level variable, a pipeline-level variable will win over a DevOps UI variable, etc.
+When you define a variable with the same name in multiple places, the most specific place wins.  For example, a job-level variable will win over a stage-level variable, a pipeline-level variable will win over a DevOps UI variable, etc.
 
 Azure DevOps comes with many system variables, these have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
