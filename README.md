@@ -12,11 +12,8 @@ There are two main types of information defined in a YAML Pipeline:
 1. Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
 2. The actual work being done by the Pipeline.  There are three different ways you can define the work:
   - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
-    ![pipeline option 1](/images/pipeline-option1-stages.png)
   - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
-    ![pipeline option 2](/images/pipeline-option2-jobs.png)
   - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
-    ![pipeline option 3](/images/pipeline-option3-steps.png)
 
 ---
 
@@ -186,7 +183,7 @@ schedules:
 ---
 
 # parameters (aka Runtime Parameters)
-- `parameters` listed at the pipeline-level are considered 'Runtime Parameters'
+- `parameters` defined at the pipeline-level are considered 'Runtime Parameters'
 - When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for each parameter
 - `parameters` is optional, and if omitted, your pipeline simply won't use any Runtime Parameters
 - Parameters are expanded early in the processing of a pipeline run, so not all variables will be available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
