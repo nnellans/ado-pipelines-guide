@@ -51,8 +51,8 @@ Let's start by going over the common fields that can be defined at the root of t
 - Specifies the Continuous Integration (CI) triggers that will be used to automatically start a run of this pipeline
 - This looks for pushes to branches or tags on the repo where the pipeline's YAML file is stored
 - This field is optional.  By default, a push to any branch of the repo will cause a pipeline run to be triggered
-- You cannot use variables in triggers, as variables are not evaluated until after the pipeline triggers
-- triggers are not supported inside template files
+- You cannot use variables in `triggers`, as variables are not evaluated until after the pipeline triggers
+- `triggers` is not supported inside template files
 - There are 3 ways to define CI triggers:
 
 ### Option 1 - Disable CI Triggers
@@ -106,9 +106,9 @@ trigger:
 - This looks for Pull Requests that are opened on branches of the repo where the pipeline's YAML file is stored
 - YAML PR triggers are only supported for GitHub and BitBucket Cloud
 - This field is optional.  By default, a PR opened on any branch of the repo will cause a pipeline run to be triggered
-- You cannot use variables in triggers, as variables are not evaluated until after the pipeline triggers
-- triggers are not supported inside template files
-- There are 3 ways to define CI triggers:
+- You cannot use variables in `pr`, as variables are not evaluated until after the pipeline triggers
+- `pr` is not supported inside template files
+- There are 3 ways to define PR triggers:
 
 ### Option 1 - Disable PR Triggers
 ```yaml
@@ -151,6 +151,35 @@ pr:
 - `drafts` is optional, the default is `true`
   - Will 'draft' PRs cause the trigger to fire?
 
+---
+
+## schedules
+- Scheduled triggers configure a pipeline to run on a schedule, which is defined using cron syntax
+- `schedules` is optional, by default no scheduled runs will occur
+- Schedules can be defined in two places: the Azure DevOps UI and in YAML.  If schedules are defined in both places, the ones in Azure DevOps UI will take precedence.
+- You cannot use variables in `schedules`
+- `schedules` is not supported inside template files
+
+Syntax
+```yaml
+schedules:
+- cron: string
+  displayName: string
+  batch: boolean
+  always: boolean
+  branches:
+    include:
+    - main
+    exclude:
+    - feature/*
+    - release/*
+```
+- `cron` defines the cron syntax of this schedule
+  - Only the UTC timezone is supported
+- `batch` is optional, the default is `false`
+  - Run a scheduled pipeline, even if the previously scheduled run is still in progress?
+- `always` is optional, the default is `false`
+  - Run the scheduled pipeline, even if there were no source code changes since the last scheduled run?
 
 
 
