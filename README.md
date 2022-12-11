@@ -9,8 +9,8 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 # High-Level Pipeline Structure
 
 There are two main types of information defined in a YAML Pipeline:
-1. Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
-2. The actual work being done by the Pipeline.  There are three different ways you can define the work:
+- Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
+- The actual work being done by the Pipeline.  There are three different ways you can define the work:
   - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
   - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
   - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
@@ -26,7 +26,7 @@ Let's start by going over the common fields that can be defined at the root of t
 - [pr](#pr-aka-pr-trigger)
 - [schedules](#schedules-aka-scheduled-trigger)
 - [parameters](#parameters-aka-runtime-parameters)
-- variables
+- [variables](#variables)
 - pool
 - resources
 - lockBehavior
@@ -213,7 +213,62 @@ parameters:
 ---
 
 # variables
-- 
+- This lets you specify variables that can be used throughout your pipeline
+- `variables` is optional, and if omitted, your pipeline simply won't use any variables
+
+General info:
+- Variables don't have a type, all variables are stored as strings
+- Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
+- Variable names must contain only letters, numbers, periods, or underscores.  Variable names must not begin with any of the following words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
+
+Variables can be defined at multiple places throughout your pipeline:
+  - Azure DevOps UI
+  - YAML pipeline-level (what we're discussing here)
+  - YAML stage-level
+  - YAML job-level
+- When you define a variable with the same name in multiple places, the most specific place wins.  For example, a job-level variable will win over a stage-level variable, a pipeline-level variable will win over a DevOps UI variable, etc.
+
+Azure DevOps comes with many system variables, these have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
+
+User-defined and System variables are both automatically converted to environment variables on the pipeline agent:
+- OS-specific environment variable standards
+  - Mac and Linux: `$NAME`
+  - Windows Batch: `%NAME%`
+  - Windows PowerShell: `$env:NAME`
+- When converting to environment variables:
+  - Variable names are converted to uppercase
+  - Any periods in the name are converted to underscores
+
+Variables can be defined in 2 different ways, you can only use one way, you can't mix both ways
+
+### Option 1 - Mapping Syntax
+This is just simple key/value pairs
+```yaml
+variables:
+  varName1: 'value1'
+  varName2: 'value2'
+  varName3: 'value3'
+```
+- This is considered the shortcut syntax
+- Does not support Variable Groups, Variable Templates, or setting a variable to read-only
+
+### Option 2 - List Syntax
+```yaml
+variables:
+- name: 'varName1'
+  value: 'value1'
+  readonly: boolean
+- group: 'varGroupName' # use a variable group
+- template: 'templateFile' # use a variable template
+  parameters:
+    param1: 'value1'
+    param2: 'value2'
+```
+- This is considered the full syntax allowing you all possible options
+- `readonly` is optional, the default is `false`
+
+
+
 
 ---
 
