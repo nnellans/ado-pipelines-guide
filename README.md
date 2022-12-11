@@ -83,6 +83,7 @@ trigger:
   paths:
     include:
     - docs/readme.md
+    - docs/app*
     exclude:
     - .gitignore
     - docs
@@ -93,10 +94,62 @@ trigger:
     - v3.0
 ```
 - If you specify both `branches` and `tags` then both will be evaluated, if at least one of them matches, then the pipeline will be triggered
-- `paths` cannot be used by itself, `paths` is only used to modify `branches`
-- Paths in Git are case-sensitive
-- Enabling the `batch` option means only one instance of the pipeline will run at a time.  While the second run of the pipeline is waiting for its turn, it will batch up all of the changes that have been made while its been waiting, and when its finally able to run it will apply all of those changes at once
+- `paths` is optional, and cannot be used by itself, `paths` is only used to modify `branches`
+  - Paths in Git are case-sensitive, and wildcards are supported
+- `batch` is optional, the default is `false`
+  - Enabling the `batch` option means only one instance of the pipeline will run at a time.  While the second run of the pipeline is waiting for its turn, it will batch up all of the changes that have been made while its been waiting, and when its finally able to run it will apply all of those changes at once
 
+---
+
+## pr
+- Specifies the Pull Request (PR) triggers that will be used to automatically start a run of this pipeline
+- This looks for Pull Requests that are opened on branches of the repo where the pipeline's YAML file is stored
+- YAML PR triggers are only supported for GitHub and BitBucket Cloud
+- This field is optional.  By default, a PR opened on any branch of the repo will cause a pipeline run to be triggered
+- You cannot use variables in triggers, as variables are not evaluated until after the pipeline triggers
+- triggers are not supported inside template files
+- There are 3 ways to define CI triggers:
+
+### Option 1 - Disable PR Triggers
+```yaml
+pr: 'none'
+```
+- Pushes to branches will not trigger a pipeline run
+
+### Option 2 - Simplified Branch Syntax
+```yaml
+pr:
+- main
+- feature/*
+```
+- This lets you specify a list of branch names, and wildcards are supported
+- Any push to these branches will trigger a pipeline run
+
+### Option 3 - Full Syntax
+```yaml
+pr:
+  autoCancel: boolean
+  drafts: boolean
+  branches:
+    include:
+    - main
+    exclude:
+    - feature/*
+    - release/*
+  paths:
+    include:
+    - docs/readme.md
+    - docs/app*
+    exclude:
+    - .gitignore
+    - docs
+```
+- `paths` is optional, and cannot be used by itself, `paths` is only used to modify `branches`
+  - Paths in Git are case-sensitive, and wildcards are supported
+- `autoCancel` is optional, the default is `true`
+  - If more updates are made to the same PR, should in-progress validation runs be canceled?
+- `drafts` is optional, the default is `true`
+  - Will 'draft' PRs cause the trigger to fire?
 
 
 
