@@ -214,14 +214,15 @@ parameters:
 
 # variables
 - This lets you specify variables that can be used throughout your pipeline
-- `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-variables (they could still be defined at other levels)
+- `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels)
 
 General info:
+- Variable names must contain only letters, numbers, periods, or underscores
+  - Variable names must not begin with any of the following words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
 - Variables don't have a type, all variables are stored as strings
 - Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
-- Variable names must contain only letters, numbers, periods, or underscores.  Variable names must not begin with any of the following words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
 
-Variables can be defined at multiple places throughout your pipeline:
+Variables can be defined at multiple places throughout your pipeline (in order from least specific to most specific):
   - Azure DevOps UI
   - YAML pipeline-level (what we're discussing here)
   - YAML stage-level
@@ -239,7 +240,7 @@ User-defined and System variables are both automatically converted to environmen
   - Variable names are converted to uppercase
   - Any periods in the name are converted to underscores
 
-Variables can be defined in 2 different ways, you can only use one way, you can't mix both ways
+Variables can be defined in 2 different ways.  You can only use one way, you can't mix both ways
 
 ### Option 1 - Mapping Syntax
 This is just simple key/value pairs
