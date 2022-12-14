@@ -11,6 +11,7 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 There are two main types of information defined in a YAML Pipeline:
 - Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
 - The actual work being done by the Pipeline.  There are three different ways you can define the work:
+  ![](images/pipeline-options.png)
   - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
   - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
   - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
@@ -112,7 +113,7 @@ trigger:
 ```yaml
 pr: 'none'
 ```
-- Pushes to branches will not trigger a pipeline run
+- Pull Requests on branches will not trigger a pipeline run
 
 ### Option 2 - Simplified Branch Syntax
 ```yaml
@@ -121,7 +122,7 @@ pr:
 - feature/*
 ```
 - This lets you specify a list of branch names, and wildcards are supported
-- Any push to any of these branches will trigger a pipeline run
+- Any Pull Reqeust on any of these branches will trigger a pipeline run
 
 ### Option 3 - Full Syntax
 ```yaml
@@ -155,7 +156,7 @@ pr:
 ## schedules (aka Scheduled Trigger)
 - Scheduled triggers configure a pipeline to run on a schedule, which is defined using cron syntax
 - `schedules` is optional, by default no scheduled runs will occur
-- Schedules can be defined in two places: the Azure DevOps UI and in YAML.  If schedules are defined in both places, the ones in Azure DevOps UI will take precedence.
+- Schedules can be defined in two places: the Azure DevOps UI and in YAML.  If schedules are defined in both places, the ones in Azure DevOps UI will take precedence
 - You cannot use variables in `schedules`
 - `schedules` is not supported inside template files
 
@@ -224,7 +225,7 @@ General info:
 
 Variables can be defined at multiple places throughout your pipeline:
   - When you define a variable with the same name in multiple places, the most specific place wins
-  - The levels in order from least specific to most specific:
+  - The places, in order from least specific to most specific:
     - Azure DevOps UI
     - YAML pipeline-level (what we're discussing here)
     - YAML stage-level
@@ -233,7 +234,7 @@ Variables can be defined at multiple places throughout your pipeline:
 Azure DevOps comes with many system variables, these have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
 User-defined and System variables are both automatically converted to environment variables on the pipeline agent:
-- OS-specific environment variable standards
+- OS-specific environment variable naming standards:
   - Mac and Linux: `$NAME`
   - Windows Batch: `%NAME%`
   - Windows PowerShell: `$env:NAME`
@@ -241,7 +242,7 @@ User-defined and System variables are both automatically converted to environmen
   - Variable names are converted to uppercase
   - Any periods in the name are converted to underscores
 
-Variables can be defined in 2 different ways.  You can only use one way, you can't mix both ways
+Variables can be defined in 2 different ways.  You must pick only one, as you can't mix both styles
 
 ### Option 1 - Mapping Syntax
 This is just simple key/value pairs
@@ -269,6 +270,46 @@ variables:
 - This is considered the full syntax allowing you all possible options
 - `readonly` is optional, the default is `false`
 
+---
+
+# pool
+- This lets you specify the type of agent that will be used to run all job within your pipeline
+- `pool` is optional, and if omitted, your YAML pipeline will default to using `ubuntu-latest`
+- `pool` can be defined at multiple places throughout your pipeline:
+  - When you define a `pool` in multiple places, the most specific place wins
+  - The places, in order from least specific to most specific:
+    - YAML pipeline-level (what we're discussing here)
+    - YAML stage-level
+    - YAML job-level
+
+`pool` can be defined in multiple ways:
+
+### Option 1 - Use self-hosted agents with no demands
+```yaml
+pool: 'privatePoolName'
+```
+
+### Option 2 - Use self-hosted agents with a single demand
+```yaml
+pool:
+  name: 'privatePoolName'
+  demands: 'singleDemandName'
+```
+
+### Option 3 - Use self-hosted agents with multiple demands
+```yaml
+pool:
+  name: 'privatePoolName'
+  demands:
+  - 'firstDemandName'
+  - 'secondDemandName'
+```
+
+### Option 4 - Use Microsoft-hosted agents
+```yaml
+pool:
+  vmImage: 'ubuntu-latest'
+```
 
 
 
