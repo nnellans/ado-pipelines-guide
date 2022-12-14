@@ -28,9 +28,11 @@ Let's start by going over the common fields that can be defined at the root of t
 - [schedules](#schedules-aka-scheduled-trigger)
 - [parameters](#parameters-aka-runtime-parameters)
 - [variables](#variables)
-- pool
+- [pool](#pool)
 - resources
 - lockBehavior
+
+---
 
 ## name
 - Specifies the name to use for each "Run" of this pipeline
@@ -40,18 +42,22 @@ Let's start by going over the common fields that can be defined at the root of t
   - `xx` is an iterator, which starts at `1` and increments with each run of the pipeline
 - This expects a string value, and expressions are allowed
 
+---
+
 ## appendCommitMessageToRunName
 - Specifies if the latest Git commit message is appended to the end of the run name (specified above)
 - This field is optional.  The default is `true`
 - This expects a boolean value.  In Azure DevOps YAML, a boolean means any of the following: `true`, `y`, `yes`, `on`, `false`, `n`, `no`, `off`
 
+---
+
 ## trigger (aka CI Trigger)
 - Specifies the Continuous Integration (CI) triggers that will be used to automatically start a run of this pipeline
-- This looks for pushes to branches or tags on the repo where the pipeline's YAML file is stored
+- This looks for pushes to branches/tags on the repo where the pipeline's YAML file is stored
 - This field is optional.  By default, a push to any branch of the repo will cause a pipeline run to be triggered
 - You cannot use variables in `triggers`, as variables are not evaluated until after the pipeline triggers
 - `triggers` is not supported inside template files
-- There are 3 ways to define CI triggers:
+- There are 3 ways to define `triggers`:
 
 ### Option 1 - Disable CI Triggers
 ```yaml
@@ -107,7 +113,7 @@ trigger:
 - YAML PR triggers are only supported for GitHub and BitBucket Cloud
 - You cannot use variables in `pr`, as variables are not evaluated until after the pipeline triggers
 - `pr` is not supported inside template files
-- There are 3 ways to define PR triggers:
+- There are 3 ways to define `pr`:
 
 ### Option 1 - Disable PR Triggers
 ```yaml
@@ -183,7 +189,7 @@ schedules:
 
 ---
 
-# parameters (aka Runtime Parameters)
+## parameters (aka Runtime Parameters)
 - `parameters` defined at the pipeline-level are considered 'Runtime Parameters'
 - When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for each parameter
 - `parameters` is optional, and if omitted, your pipeline simply won't use any Runtime Parameters
@@ -213,7 +219,7 @@ parameters:
 
 ---
 
-# variables
+## variables
 - This lets you specify variables that can be used throughout your pipeline
 - `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels though)
 
@@ -241,8 +247,7 @@ User-defined and System variables are both automatically converted to environmen
 - When converting to environment variables:
   - Variable names are converted to uppercase
   - Any periods in the name are converted to underscores
-
-Variables can be defined in 2 different ways.  You must pick only one, as you can't mix both styles
+- There are 2 ways to define `variables`.  You must pick only one, as you can't mix both styles:
 
 ### Option 1 - Mapping Syntax
 This is just simple key/value pairs
@@ -272,8 +277,8 @@ variables:
 
 ---
 
-# pool
-- This lets you specify the type of agent that will be used to run all job within your pipeline
+## pool
+- This lets you specify the type of agent that will be used to run all jobs within your pipeline
 - `pool` is optional, and if omitted, your YAML pipeline will default to using `ubuntu-latest`
 - `pool` can be defined at multiple places throughout your pipeline:
   - When you define a `pool` in multiple places, the most specific place wins
@@ -281,8 +286,7 @@ variables:
     - YAML pipeline-level (what we're discussing here)
     - YAML stage-level
     - YAML job-level
-
-`pool` can be defined in multiple ways:
+- There are 4 ways to define `pool`:
 
 ### Option 1 - Use self-hosted agents with no demands
 ```yaml
@@ -293,7 +297,7 @@ pool: 'privatePoolName'
 ```yaml
 pool:
   name: 'privatePoolName'
-  demands: 'singleDemandName'
+  demands: 'singleDemand'
 ```
 
 ### Option 3 - Use self-hosted agents with multiple demands
@@ -301,8 +305,8 @@ pool:
 pool:
   name: 'privatePoolName'
   demands:
-  - 'firstDemandName'
-  - 'secondDemandName'
+  - 'firstDemand'
+  - 'secondDemand'
 ```
 
 ### Option 4 - Use Microsoft-hosted agents
