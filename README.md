@@ -342,7 +342,7 @@ resources:
 
 ### resources - containers
 - Specifies container images that can be used throughout your Pipeline
-- By default, Jobs run directly on the Agent machine (aka Host Jobs). You can also configure a Job to run inside a Container running on the Agent machine (aka Container Jobs).  You can even specify an individual Step/Task to run on a Container<br />![](images/container-jobs.png)
+- By default, Jobs run directly on the Agent machine (aka Host Jobs). You can also configure a Job to run inside a Container running on the Agent machine (aka Container Jobs).  You can even specify an individual Step/Task to run in a Container<br />![](images/container-jobs.png)
   - This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
   - This is supported on Microsoft-hosted Agents, but only for `windows-2019` and `ubuntu-*` Agents
   - If you run self-hosted Agents, you must install Docker and make sure the DevOps Agent has permissions to access the Docker Daemon
