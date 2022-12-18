@@ -385,7 +385,7 @@ containers:
     ```yaml
     trigger: 'none'
     ```
-  - Option 2 - Shortcut Trigger on all image tags
+  - Option 2 - Shortcut - Trigger on all image tags
     ```yaml
     trigger: 'true'
     ```
