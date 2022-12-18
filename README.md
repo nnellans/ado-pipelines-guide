@@ -11,7 +11,7 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 There are two main types of information defined in a YAML Pipeline:
 - Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
 - The actual work being done by the Pipeline.  There are three different ways you can define the work:
-  ![](images/pipeline-options.png)
+  - ![](images/pipeline-options.png)
   - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
   - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
   - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
@@ -306,8 +306,98 @@ pool:
   vmImage: 'ubuntu-latest'
 ```
 
+---
 
+## resources
+- This section is used to define multiple different types of resources that can be used anywhere throughout your Pipeline
+- You can define builds, containers, packages, pipelines, repositories, and webhooks
 
+### resources - builds
+Builds are an artifact produced by an external CI system
+
+```yaml
+resources:
+  builds:
+  - build: string #only letters, number, dashes, and underscores
+    type: string
+    connection: string
+    source: string
+    version: string #optional, default is latest successful build
+    branch: string
+    trigger: boolean #optional, default is none, only accepts none or true
+```
+- `build` is what you use to reference this build inside your YAML code
+- `type` refers to what type of artifact this is, for example Jenkins, or circleCI
+- `connection` refers to the Azure DevOps Service Connection that will be used to communicate with the external CI system
+- `source` is dependent on the external CI system (for Jenkins this would be the Project name)
+- `version` is the build number from the external CI system
+- `trigger`:  When this artifact completes a build, is it allowed to trigger this pipeline?
+  - Only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
+- These build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job.
+
+### resources - containers
+- Specifies container images that can be used throughout your Pipeline
+- By default, Jobs run directly on the Agent machine (aka Host Jobs). You can also configure a Job to run inside a Container running on the Agent machine (aka Container Jobs).  You can even specify an individual Step/Task to run on a Container
+  - ![](images/container-jobs.png)
+  - This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
+  - This is supported on Microsoft-hosted Agents, but only for `windows-2019` and `ubuntu-*` Agents
+  - If you run self-hosted Agents, you must install Docker and make sure the DevOps Agent has permissions to access the Docker Daemon
+  - Linux Containers
+    - Must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
+  - Windows Containers
+    - Must match the kernel version of the Windows Host where it is running
+    - Must be properly configured in order to run Container Jobs (install Node.js and any dependencies)
+
+  
+
+```yaml
+containers:
+- container: string #required, only letters, numbers, dashes, and underscores
+  image: string #required
+  type: string #optional, defaults to Docker Registry
+  trigger: #optional, defaults to not enabled
+  endpoint: string
+  env:
+    string: string
+  mapDockerSocket: boolean
+  options: string
+  ports: [ string ]
+  volumes: [ string ]
+  mountReadOnly:
+    work: boolean
+    externals: boolean
+    tools: boolean
+    tasks: boolean
+  azureSubscription: string
+  resourceGroup: string
+  registry: string
+  repository: string
+```
+- `container` is what you use to reference this image inside your YAML code
+- `image` example: `ubuntu:16.04`
+- `type` specifies what type of container registry, for example `ACR`
+- `trigger`: If the container image is updated, will it trigger this pipeline?
+  - Option 1 - Disable
+    ```yaml
+    trigger: 'none'
+    ```
+  - Option 2 - Shortcut Trigger on all image tags
+    ```yaml
+    trigger: 'true'
+    ```
+  - Option 3 - Full Syntax - Trigger on all image tags
+    ```yaml
+    trigger:
+      enabled: 'true'
+    ```
+  - Option 4 - Full Syntax - Trigger on specific image tags
+    ```yaml
+    trigger:
+      tags:
+        include:
+        - 'ubuntu:16.04'
+        exclude:
+        - 'ubuntu:18.04'
 ---
 
 1. stages
