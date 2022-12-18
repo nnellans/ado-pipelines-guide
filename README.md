@@ -29,7 +29,13 @@ Let's start by going over the common fields that can be defined at the root of t
 - [parameters](#parameters-aka-runtime-parameters)
 - [variables](#variables)
 - [pool](#pool)
-- resources
+- [resources](#resources)
+  - [builds](#resources---builds)
+  - [containers](#resources---containers)
+  - packages
+  - pipelines
+  - repositories
+  - webhooks
 - lockBehavior
 
 ---
