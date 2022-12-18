@@ -10,8 +10,7 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 
 There are two main types of information defined in a YAML Pipeline:
 - Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
-- The actual work being done by the Pipeline.  There are three different ways you can define the work:
-  - ![](images/pipeline-options.png)
+- The actual work being done by the Pipeline.  There are three different ways you can define the work:<br />![](images/pipeline-options.png)
   - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
   - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
   - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
@@ -343,8 +342,7 @@ resources:
 
 ### resources - containers
 - Specifies container images that can be used throughout your Pipeline
-- By default, Jobs run directly on the Agent machine (aka Host Jobs). You can also configure a Job to run inside a Container running on the Agent machine (aka Container Jobs).  You can even specify an individual Step/Task to run on a Container
-  - ![](images/container-jobs.png)
+- By default, Jobs run directly on the Agent machine (aka Host Jobs). You can also configure a Job to run inside a Container running on the Agent machine (aka Container Jobs).  You can even specify an individual Step/Task to run on a Container<br />![](images/container-jobs.png)
   - This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
   - This is supported on Microsoft-hosted Agents, but only for `windows-2019` and `ubuntu-*` Agents
   - If you run self-hosted Agents, you must install Docker and make sure the DevOps Agent has permissions to access the Docker Daemon
