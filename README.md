@@ -34,7 +34,7 @@ Let's start by going over the common fields that can be defined at the root of t
   - [packages](#resources-packages)
   - [pipelines](#resources-pipelines)
   - [repositories](#resources-repositories)
-  - webhooks
+  - [webhooks](#resources-webhooks)
 - lockBehavior
 
 ---
@@ -301,7 +301,7 @@ resources:
     trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? optional, default is none. accepts only none or true
 ```
 - The `trigger` option is only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
-- Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job.
+- Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job
 
 ### <ins>Resources: containers</ins>
 These are container images
@@ -318,31 +318,32 @@ General Info:
   - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
 
 ```yaml
-containers:
-- container: string # the ID used to reference this image throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
-  image: string # required. examples: ubuntu:16.04, company.azurecr.io/repo:1.0.0
-  type: string # optional, defaults to Docker Registry. example: ACR
-  trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
-  endpoint: string # the Azure DevOps Service Connection used to communicate with the private registry
-  env: # variables to map into the container's environment
-    string: string
-  mapDockerSocket: boolean # map the /var/run/docker.sock volume on container jobs? optional, default is true
-  options: string # arguments to pass to the container at startup
-  ports: # expose ports on the Container
-  - '8080:80' # binds port 80 on the Container to port 8080 on the host Agent
-  - '6380' # binds port 6380 on the Container to a random available port on the host Agent
-  volumes: # mount volumes on the Container
-  - '/src/dir1:/dst/dir2' # mount /src/dir1 from the host Agent to /dst/dir2 on the Container
-  mountReadOnly: # which volumes should be mounted as read-only? optional, all 4 have default of false
-    work: boolean # mount the work directory as readonly?
-    externals: boolean # mount the externals directoy as readonly? these are components required to talk with the Agent
-    tools: boolean # mount the tools directory as readonly? these are installable tools like Python and Ruby
-    tasks: boolean # mount the tasks directory as readonly? these are tasks required by the job
-  # more info needed ? / ACR specific ?
-  azureSubscription: string # the Azure DevOps Service Connection used to communicate with ACR
-  resourceGroup: string # the Resource Group where the ACR is located
-  registry: string # name of the registry in ACR
-  repository: string # name of the repo in ACR
+resources:
+  containers:
+  - container: string # the ID used to reference this image throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+    image: string # required. examples: ubuntu:16.04, company.azurecr.io/repo:1.0.0
+    type: string # optional, defaults to Docker Registry. example: ACR
+    trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
+    endpoint: string # the Azure DevOps Service Connection used to communicate with the private registry
+    env: # variables to map into the container's environment
+      string: string
+    mapDockerSocket: boolean # map the /var/run/docker.sock volume on container jobs? optional, default is true
+    options: string # arguments to pass to the container at startup
+    ports: # expose ports on the Container
+    - '8080:80' # binds port 80 on the Container to port 8080 on the host Agent
+    - '6380' # binds port 6380 on the Container to a random available port on the host Agent
+    volumes: # mount volumes on the Container
+    - '/src/dir1:/dst/dir2' # mount /src/dir1 from the host Agent to /dst/dir2 on the Container
+    mountReadOnly: # which volumes should be mounted as read-only? optional, all 4 have default of false
+      work: boolean # mount the work directory as readonly?
+      externals: boolean # mount the externals directoy as readonly? these are components required to talk with the Agent
+      tools: boolean # mount the tools directory as readonly? these are installable tools like Python and Ruby
+      tasks: boolean # mount the tasks directory as readonly? these are tasks required by the job
+    # more info needed ? / ACR specific ?
+    azureSubscription: string # the Azure DevOps Service Connection used to communicate with ACR
+    resourceGroup: string # the Resource Group where the ACR is located
+    registry: string # name of the registry in ACR
+    repository: string # name of the repo in ACR
 ```
 - `trigger` options in depth:
   ```yaml
@@ -370,30 +371,32 @@ containers:
 These are nuget or npm packages stored on GitHub Packages
 
 ```yaml
-packages:
-- package: string # the ID used to reference this package throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
-  type: string # the type of the package. required. examples: nuget, npm
-  connection: string # the Azure DevOps Service Connection used to communicate with GitHub. required
-  name: string # the repo and name of the package. required. example: someRepo/somePackage
-  version: string # the version of the package. optional, default is the latest version
-  tag: string
-  trigger: string # if the package is updated, will it trigger this pipeline? optional, default is none. accepts only none or true
+resources:
+  packages:
+  - package: string # the ID used to reference this package throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+    type: string # the type of the package. required. examples: nuget, npm
+    connection: string # the Azure DevOps Service Connection used to communicate with GitHub. required
+    name: string # the repo and name of the package. required. example: someRepo/somePackage
+    version: string # the version of the package. optional, default is the latest version
+    tag: string
+    trigger: string # if the package is updated, will it trigger this pipeline? optional, default is none. accepts only none or true
 ```
-- Package resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `getPackage` Task in your Job.
+- Package resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `getPackage` Task in your Job
 
 ### <ins>Resources: pipelines</ins>
 These are Artifacts produced by a pipeline
 
 ```yaml
-pipelines:
-- pipeline: string # the ID used to reference this pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
-  project: string # the azure devops project where this pipeline resource is located. optional, default is the current azure devops project
-  source: string # the name of the pipeline that produced the artifact
-  version: string # the pipeline run number that produced the artifact. optional, default is the latest successful run across all stages. used only for manual or scheduled triggers
-  branch: string # branch to pick the artifact. optional, defaults to all branches. used only for manual or scheduled triggers
-  tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. used only for manual or scheduled triggers
-  - string
-  trigger: # if the pipeline artifact is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
+resources:
+  pipelines:
+  - pipeline: string # the ID used to reference this pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+    project: string # the azure devops project where this pipeline resource is located. optional, default is the current azure devops project
+    source: string # the name of the pipeline that produced the artifact
+    version: string # the pipeline run number that produced the artifact. optional, default is the latest successful run across all stages. used only for manual or scheduled triggers
+    branch: string # branch to pick the artifact. optional, defaults to all branches. used only for manual or scheduled triggers
+    tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. used only for manual or scheduled triggers
+    - string
+    trigger: # if the pipeline artifact is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
 ```
 - Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are downloaded by 'deploy' jobs.  So, in order for your 'regular' Job to use them, you must first include a 'download' Task in your Job
 - `trigger` options in depth:
@@ -439,23 +442,9 @@ resources:
     name: string  # the repository name, what you put here depends on the value of type. more info below
     ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
     endpoint: string  # # the Azure DevOps Service Connection used to communicate with the repo
-    trigger:  # CI trigger for this repository, no CI trigger if skipped (only works for Azure Repos)
-      branches:
-        include:
-        - 'main'
-        exclude:
-        - 'feature/*'
-      tags:
-        include:
-        - 'v1'
-        exclude:
-        - 'v2'
-      paths:
-        include:
-        - '/src'
-        exclude:
-        - '/src/dir1'
+    trigger:  # if the repository is updated, will it trigger this pipeline? more info below. optional, the default is none
 ```
+- Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `checkout` Task in your Job.
 - For Azure Repos Git use `type: git`
 - What you pick for `type` dictates what you should put for `name`
   - For `type: git`
@@ -463,6 +452,40 @@ resources:
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
   - For any other allowed `type`
     - Set `name: orgName/someRepo` or `name: userName/someRepo`
+- `trigger` is only supported for Azure Repos Git:
+  ```yaml
+  # option 1 - Disable
+  trigger: 'none'
+
+  # option 2 - Simplified Branch Syntax
+  trigger:
+  - 'main'
+  - 'release/*'
+  
+  # option 3 - Full Syntax
+  trigger:
+    branches:
+      include:
+      - 'main'
+      exclude:
+      - 'feature/*'
+    paths: # more info below. optional, default is root of the repo
+      include:
+      - '/src'
+      exclude:
+      - '/src/dir1'
+    tags:
+      include:
+      - 'v1'
+      exclude:
+      - 'v2'
+  ```
+  - If you specify both `branches` and `tags` then both will be evaluated.  If at least one of them matches, then the pipeline will be triggered
+  - `paths`: Cannot be used by itself, it can only be used in combination with `branches`
+    - Paths in Git are case-sensitive
+
+### <ins>Resources: webhooks</ins>
+These are external services
 
 ---
 
