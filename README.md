@@ -286,7 +286,7 @@ pool:
 ## resources
 This section defines multiple types of resources that can be used throughout your Pipeline. You can define builds, containers, packages, pipelines, repositories, and webhooks.  Each one of these resources can be used at various different points throughout your Pipeline.
 
-### Resources: builds
+### <ins>Resources: builds</ins>
 These are artifacts produced by an external CI system
 
 ```yaml
