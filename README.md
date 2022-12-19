@@ -424,7 +424,27 @@ pipelines:
   - `stages` are AND'ed, meaning all of the stages listed must be successfully completed
   - If branches, tags, and stages are all defined, then all of them must be fully satisfied for the trigger to fire
 
-  
+## Resource: repositories
+
+```yaml
+resources:
+  repositories:
+  - repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
+    type: enum  # see the following "Type" topic
+    name: string  # repository name (format depends on `type`)
+    ref: string  # ref name to use; defaults to 'refs/heads/main'
+    endpoint: string  # name of the service connection to use (for types that aren't Azure Repos)
+    trigger:  # CI trigger for this repository, no CI trigger if skipped (only works for Azure Repos)
+      branches:
+        include: [ string ] # branch names which trigger a build
+        exclude: [ string ] # branch names which won't
+      tags:
+        include: [ string ] # tag names which trigger a build
+        exclude: [ string ] # tag names which won't
+      paths:
+        include: [ string ] # file paths which must match to trigger a build
+        exclude: [ string ] # file paths which won't trigger a build
+```
 
 ---
 
