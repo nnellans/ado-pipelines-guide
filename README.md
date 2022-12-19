@@ -29,11 +29,11 @@ Let's start by going over the common fields that can be defined at the root of t
 - [variables](#variables)
 - [pool](#pool)
 - [resources](#resources)
-  - [builds](#resources---builds)
-  - [containers](#resources---containers)
-  - packages
-  - pipelines
-  - repositories
+  - [builds](#resources-builds)
+  - [containers](#resources-containers)
+  - [packages](#resources-packages)
+  - [pipelines](#resources-pipelines)
+  - [repositories](#resources-repositories)
   - webhooks
 - lockBehavior
 
@@ -424,7 +424,7 @@ pipelines:
   - `stages` are AND'ed, meaning all of the stages listed must be successfully completed
   - If branches, tags, and stages are all defined, then all of them must be fully satisfied for the trigger to fire
 
-## Resource: repositories
+## Resources: repositories
 
 ```yaml
 resources:
