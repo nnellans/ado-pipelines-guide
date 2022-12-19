@@ -303,7 +303,7 @@ resources:
 - The `trigger` option is only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
 - Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job.
 
-### Resources: containers
+### <ins>Resources: containers</ins>
 These are container images
 
 By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
@@ -366,7 +366,7 @@ containers:
       - 'ubuntu:18.04'
   ```
 
-### Resources: packages
+### <ins>Resources: packages</ins>
 These are nuget or npm packages stored on GitHub Packages
 
 ```yaml
@@ -381,7 +381,7 @@ packages:
 ```
 - Package resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `getPackage` Task in your Job.
 
-### Resources: pipelines
+### <ins>Resources: pipelines</ins>
 These are Artifacts produced by a pipeline
 
 ```yaml
@@ -389,23 +389,23 @@ pipelines:
 - pipeline: string # the ID used to reference this pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
   project: string # the azure devops project where this pipeline resource is located. optional, default is the current azure devops project
   source: string # the name of the pipeline that produced the artifact
-  version: string # optional, default is the latest successful run across all stages. the pipeline run number that produced the artifact. used only for manual or scheduled triggers
-  branch: string # Branch to pick the artifact. Optional; defaults to all branches, used only for manual or scheduled triggers.. 
-  tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. Optional; used only for manual or scheduled triggers. 
+  version: string # the pipeline run number that produced the artifact. optional, default is the latest successful run across all stages. used only for manual or scheduled triggers
+  branch: string # branch to pick the artifact. optional, defaults to all branches. used only for manual or scheduled triggers
+  tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. used only for manual or scheduled triggers
   - string
-  trigger: # optional, defaults to not enabled. if the pipeline artifact is updated, will it trigger this pipeline? see more below
+  trigger: # if the pipeline artifact is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
 ```
-- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are downloaded by 'deploy' jobs.  So, in order for your 'regular' Job to use them, you must first include a 'download' Task in your Job.
+- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are downloaded by 'deploy' jobs.  So, in order for your 'regular' Job to use them, you must first include a 'download' Task in your Job
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
   
-  # option 2 - Trigger on all branches (shortcut)
+  # option 2 - Trigger on all branches (shortcut syntax)
   trigger: 'true'
 
-  # option 3 - Trigger on some branches (simplified syntax)
-  trigger:
+  # option 3 - Trigger on a list of branches (simplified syntax)
+  trigger: # an update to any of these branches will trigger the pipeline
     enabled: boolean # optional, default is true
     branches:
     - 'main'
@@ -428,27 +428,41 @@ pipelines:
   - `stages` are AND'ed, meaning all of the stages listed must be successfully completed
   - If branches, tags, and stages are all defined, then all of them must be fully satisfied for the trigger to fire
 
-### Resources: repositories
+### <ins>Resources: repositories</ins>
+These are source code repositories
 
 ```yaml
 resources:
   repositories:
-  - repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
-    type: enum  # see the following "Type" topic
-    name: string  # repository name (format depends on `type`)
-    ref: string  # ref name to use; defaults to 'refs/heads/main'
-    endpoint: string  # name of the service connection to use (for types that aren't Azure Repos)
+  - repository: string  # the ID used to reference this repo. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+    type: string  # the type of repo. accepts only git, github, githubenterprise, and bitbucket
+    name: string  # the repository name, what you put here depends on the value of type. more info below
+    ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
+    endpoint: string  # # the Azure DevOps Service Connection used to communicate with the repo
     trigger:  # CI trigger for this repository, no CI trigger if skipped (only works for Azure Repos)
       branches:
-        include: [ string ] # branch names which trigger a build
-        exclude: [ string ] # branch names which won't
+        include:
+        - 'main'
+        exclude:
+        - 'feature/*'
       tags:
-        include: [ string ] # tag names which trigger a build
-        exclude: [ string ] # tag names which won't
+        include:
+        - 'v1'
+        exclude:
+        - 'v2'
       paths:
-        include: [ string ] # file paths which must match to trigger a build
-        exclude: [ string ] # file paths which won't trigger a build
+        include:
+        - '/src'
+        exclude:
+        - '/src/dir1'
 ```
+- `type: git` is used for Azure Repos Git
+- `name`
+  - For `type: git`
+    - If the repo exists in the same DevOps Project, then set `name: someRepo`
+    - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
+  - For any other allowed `type`
+    - Set `name: orgName/someRepo` or `name: userName/someRepo`
 
 ---
 
