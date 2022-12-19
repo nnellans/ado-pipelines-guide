@@ -67,21 +67,16 @@ appendCommitMessageToRunName: boolean # optional, default is true. is the latest
 - `triggers` are not supported inside template files
 
 There are 3 ways to define `triggers`:
-
-### Option 1 - Disable CI Triggers
 ```yaml
+# Option 1 - Disable CI Triggers
 trigger: 'none' # pushes to branches will not trigger the pipeline
-```
 
-### Option 2 - Simplified Branch Syntax
-```yaml
+# Option 2 - Simplified Branch Syntax
 trigger: # any push to any of these branches will trigger a pipeline run
 - main
 - feature/*
-```
 
-### Option 3 - Full Syntax
-```yaml
+# Option 3 - Full Syntax
 trigger:
   batch: boolean # optional, default is false
   branches:
@@ -119,21 +114,16 @@ trigger:
 - `pr` is not supported inside template files
 
 There are 3 ways to define `pr`:
-
-### Option 1 - Disable PR Triggers
 ```yaml
+# Option 1 - Disable PR Triggers
 pr: 'none' # Pull Requests on branches will not trigger a pipeline run
-```
 
-### Option 2 - Simplified Branch Syntax
-```yaml
+# Option 2 - Simplified Branch Syntax
 pr: # any Pull Request on any of these branches will trigger a pipeline run
 - main
 - feature/*
-```
 
-### Option 3 - Full Syntax
-```yaml
+# Option 3 - Full Syntax
 pr:
   autoCancel: boolean # optional, default is true. if more updates are made to the same PR, should in-progress validation runs be canceled?
   drafts: boolean # optional, default is true. will 'draft' PRs cause the trigger to fire?
@@ -234,22 +224,17 @@ Both User-defined variables and System variables are automatically converted to 
   - Any periods in the name are converted to underscores
 
 There are 2 ways to define `variables`.  You must pick only one, as you can't mix both styles:
-
-### Option 1 - Mapping Syntax
-This is just simple key/value pairs
 ```yaml
+# Option 1 - Mapping Syntax
+# Does not support Variable Groups, Variable Templates, or setting a variable to read-only
 variables:
   varName1: 'value1'
   varName2: 'value2'
   varName3: 'value3'
-```
-- This is considered the shortcut syntax
-- Does not support Variable Groups, Variable Templates, or setting a variable to read-only
 
-### Option 2 - List Syntax
-```yaml
+# Option 2 - List Syntax
 variables:
-- name: 'varName1' # must be the first property
+- name: 'varName1'
   value: 'value1'
   readonly: boolean # optional, default is false
 - group: 'varGroupName' # specify a variable group
@@ -258,7 +243,6 @@ variables:
     param1: 'value1'
     param2: 'value2'
 ```
-- This is considered the full syntax, it allows all possible options
 
 ---
 
@@ -271,30 +255,23 @@ variables:
     - YAML job-level
 
 There are 4 ways to define `pool`:
-
-### Option 1 - Use self-hosted agents with no demands
 ```yaml
+# Option 1 - Use self-hosted agents with no demands
 pool: 'privatePoolName'
-```
 
-### Option 2 - Use self-hosted agents with a single demand
-```yaml
+# Option 2 - Use self-hosted agents with a single demand
 pool:
   name: 'privatePoolName'
   demands: 'singleDemand'
-```
 
-### Option 3 - Use self-hosted agents with multiple demands
-```yaml
+# Option 3 - Use self-hosted agents with multiple demands
 pool:
   name: 'privatePoolName'
   demands:
   - 'firstDemand'
   - 'secondDemand'
-```
 
-### Option 4 - Use Microsoft-hosted agents
-```yaml
+# Option 4 - Use Microsoft-hosted agents
 pool:
   vmImage: 'ubuntu-latest'
 ```
@@ -306,7 +283,7 @@ pool:
 - This section defines multiple types of resources that can be used throughout your Pipeline
 - You can define builds, containers, packages, pipelines, repositories, and webhooks
 
-### resources - builds
+## Resources: builds
 Builds are an artifact that's produced by an external CI system
 
 ```yaml
@@ -323,16 +300,19 @@ resources:
 - `trigger` is only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
 - Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job.
 
-### resources - containers
-- Specifies container images that can be used throughout your Pipeline
-- By default, Jobs run directly on the Agent machine (aka Host Jobs). But, you can configure a Job to run inside a Container that's running on the Agent machine (aka Container Jobs).  If desired, you can even specify a Container at the Step level<br />![](images/container-jobs.png)
-  - This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
-  - This is supported by Microsoft-hosted Agents, but only for `windows-2019` and `ubuntu-*` Agents
-  - If you run self-hosted Agents, you must install Docker and make sure the DevOps Agent has permissions to access the Docker Daemon
-  - Linux Container Images must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
-  - Windows Container Images
-    - Must match the kernel version of the Windows Host Agent where it is running
-    - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
+## Resources: containers
+Containers define container images that can be used throughout your Pipeline
+
+By default, each Job runs directly on an Agent machine (aka Host Jobs). But, another option is to run the Job inside of a Container on the Agent machine (aka Container Jobs).  You can even go more granular, and specify individual Steps to run on a Container<br />![](images/container-jobs.png)
+
+General Info:
+- Not all Agents support running Container Jobs. This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
+- This is supported by Microsoft-hosted Agents, but only for `windows-2019`, `windows-2022`, and `ubuntu-*` Agents
+- If you run self-hosted Agents, you must install Docker and make sure the DevOps Agent has permissions to access the Docker Daemon
+- Linux Container Images must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
+- Windows Container Images
+  - Must match the kernel version of the Windows Host Agent where it is running (for example, 2019 container on a 2019 agent)
+  - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
 
 ```yaml
 containers:
@@ -361,19 +341,19 @@ containers:
   registry: string # name of the registry in ACR
   repository: string # name of the repo in ACR
 ```
-- `trigger` options:
+- `trigger` options in depth:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
   
-  # option 2 - Shortcut - Trigger on all image tags
+  # option 2 - Trigger on all image tags (shortcut)
   trigger: 'true'
 
-  # option 3 - Full Syntax - Trigger on all image tags
+  # option 3 - Trigger on all image tags (fully syntax)
   trigger:
     enabled: 'true'
 
-  # option 4 - Full Syntax - Trigger on specific image tags
+  # option 4 - Trigger on specific image tags
   trigger:
     tags:
       include:
@@ -381,6 +361,71 @@ containers:
       exclude:
       - 'ubuntu:18.04'
   ```
+
+## Resources: packages
+Packages define either nuget or npm packages (stored on GitHub Packages) that can be used throughout your Pipeline
+
+```yaml
+packages:
+- package: string # required, must be the first property. the ID used to reference this package in your pipeline. accepts only letters, numbers, dashes, and underscores
+  type: string # required. the type of the package. examples: nuget, npm
+  connection: string # required. the Azure DevOps Service Connection that will be used to communicate with GitHub
+  name: string # required. the repo and name of the package. example: someRepo/somePackage
+  version: string # optional, default is the latest version. the version of the package
+  tag: string
+  trigger: string # optional, default is none, accepts none or true. if the package is updated, will it trigger this pipeline?
+```
+- Package resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `getPackage` Task in your Job.
+
+## Resources: pipelines
+Pipelines define Artifacts (produced by other pipelines) that can be used throughout your Pipeline
+
+```yaml
+pipelines:
+- pipeline: string # required, must be the first property. the ID used to reference this pipeline within your pipeline. accepts only letters, numbers, dashes, and underscores
+  project: string # optional, default is the current azure devops project. the azure devops project where this pipeline resource is located
+  source: string # the name of the pipeline that produced the artifact
+  version: string # optional, default is the latest successful run across all stages. the pipeline run number that produced the artifact. used only for manual or scheduled triggers
+  branch: string # Branch to pick the artifact. Optional; defaults to all branches, used only for manual or scheduled triggers.. 
+  tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. Optional; used only for manual or scheduled triggers. 
+  - string
+  trigger: # optional, defaults to not enabled. if the pipeline artifact is updated, will it trigger this pipeline? see more below
+```
+- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are downloaded by 'deploy' jobs.  So, in order for your 'regular' Job to use them, you must first include a 'download' Task in your Job.
+- `trigger` options in depth:
+  ```yaml
+  # option 1 - Disable
+  trigger: 'none'
+  
+  # option 2 - Trigger on all branches (shortcut)
+  trigger: 'true'
+
+  # option 3 - Trigger on some branches (simplified syntax)
+  trigger:
+    enabled: boolean # optional, default is true
+    branches:
+    - 'main'
+    - 'feature/*'
+
+  # option 4 - Full Syntax
+  trigger:
+    enabled: boolean # optional, default is true
+    branches: # list of branches that when matched will trigger the pipeline
+      include:
+      - 'main'
+      exclude:
+      - 'feature/*'
+    tags: # list of tags that when matched will trigger the pipeline
+    - 'three'
+    stages: # list of stages that when complete will trigger the pipeline
+    - 'four'
+  ```
+  - `tags` are AND'ed, meaning all of the tags listed must be present
+  - `stages` are AND'ed, meaning all of the stages listed must be successfully completed
+  - If branches, tags, and stages are all defined, then all of them must be fully satisfied for the trigger to fire
+
+  
+
 ---
 
 1. stages
@@ -396,9 +441,6 @@ containers:
 
 
 ---
-Triggers
-- Tells the Pipeline when to run
-
 Stages
 - A logical boundary that can be used to mark seperation of concerns (one example being Build, QA, Production)
 - Stages are comprised of one or more Jobs (max of 256 Jobs per Stage)
