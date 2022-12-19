@@ -306,7 +306,7 @@ resources:
 ### <ins>Resources: containers</ins>
 These are container images
 
-By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
+By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option to run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
 
 General Info:
 - Not all Agents support running Container Jobs. This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
@@ -456,8 +456,8 @@ resources:
         exclude:
         - '/src/dir1'
 ```
-- `type: git` is used for Azure Repos Git
-- `name`
+- For Azure Repos Git use `type: git`
+- What you pick for `type` dictates what you should put for `name`
   - For `type: git`
     - If the repo exists in the same DevOps Project, then set `name: someRepo`
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
