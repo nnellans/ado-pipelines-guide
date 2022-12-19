@@ -9,8 +9,8 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 # High-Level Pipeline Structure
 
 There are two main types of information defined in a YAML Pipeline:
-- Pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
-- The actual work being done by the Pipeline.  There are three different ways you can define the work:<br />![](images/pipeline-options.png)
+- One, pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
+- Two, the actual work being done by the Pipeline.  There are three different ways you can define the work:<br />![](images/pipeline-options.png)
   - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
   - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
   - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
@@ -40,56 +40,57 @@ Let's start by going over the common fields that can be defined at the root of t
 ---
 
 ## name
+```yaml
+name: string # optional, default is date.iterator (see below)
+```
 - Specifies the name to use for each "Run" of this pipeline
-- Not to be confused with the actual name of the pipeline itself (which is defined in the Azure DevOps UI)
+  - Not to be confused with the actual name of the pipeline itself (which is defined in the Azure DevOps UI)
 - This field is optional.  The default name of each run will be in this format: `yyyymmdd.xx` where:
   - `yyyymmdd` is the current date
   - `xx` is an iterator, which starts at `1` and increments with each run of the pipeline
-- This expects a string value, and expressions are allowed
+- Expressions are allowed in the value
 
 ---
 
 ## appendCommitMessageToRunName
-- Specifies if the latest Git commit message is appended to the end of the run name (specified above)
-- This field is optional.  The default is `true`
-- This expects a boolean value.  In Azure DevOps YAML, a boolean means any of the following: `true`, `y`, `yes`, `on`, `false`, `n`, `no`, `off`
+```yaml
+appendCommitMessageToRunName: boolean # optional, default is true. is the latest Git commit message appended to the end of the run name?
+```
 
 ---
 
 ## trigger (aka CI Trigger)
 - Specifies the Continuous Integration (CI) triggers that will be used to automatically start a run of this pipeline
 - This looks for pushes to branches/tags on the repo where the pipeline's YAML file is stored
-- This field is optional.  By default, a push to any branch of the repo will cause a pipeline run to be triggered
+- This field is optional.  By default, a push to any branch of the repo will cause the pipeline to be triggered
 - You cannot use variables in `triggers`, as variables are not evaluated until after the pipeline triggers
-- `triggers` is not supported inside template files
-- There are 3 ways to define `triggers`:
+- `triggers` are not supported inside template files
+
+There are 3 ways to define `triggers`:
 
 ### Option 1 - Disable CI Triggers
 ```yaml
-trigger: 'none'
+trigger: 'none' # pushes to branches will not trigger the pipeline
 ```
-- Pushes to branches will not trigger a pipeline run
 
 ### Option 2 - Simplified Branch Syntax
 ```yaml
-trigger:
+trigger: # any push to any of these branches will trigger a pipeline run
 - main
 - feature/*
 ```
-- This lets you specify a list of branch names, and wildcards are supported
-- Any push to any of these branches will trigger a pipeline run
 
 ### Option 3 - Full Syntax
 ```yaml
 trigger:
-  batch: boolean #optional, default is false
+  batch: boolean # optional, default is false
   branches:
     include:
     - main
     exclude:
     - feature/*
     - release/*
-  paths: #optional, default is root of the repo
+  paths: # optional, default is root of the repo
     include:
     - docs/readme.md
     - docs/app*
@@ -102,10 +103,10 @@ trigger:
     exclude:
     - v3.0
 ```
-- `batch`: Only one instance of the pipeline will run at a time.  While the second run of the pipeline is waiting for its turn, it will batch up all of the changes that have been made while its been waiting, and when its finally able to run it will apply all of those changes at once
+- `batch`: Setting this to true means only one instance of the pipeline will run at a time.  While the second run of the pipeline is waiting for its turn, it will batch up all of the changes that have been made while its been waiting, and when its finally able to run it will apply all of those changes at once
 - If you specify both `branches` and `tags` then both will be evaluated, if at least one of them matches, then the pipeline will be triggered
 - `paths`: Cannot be used by itself, it can only be used in combination with `branches`
-  - Paths in Git are case-sensitive, and wildcards are supported
+  - Paths in Git are case-sensitive
 
 ---
 
@@ -116,35 +117,33 @@ trigger:
 - YAML PR triggers are only supported for GitHub and BitBucket Cloud
 - You cannot use variables in `pr`, as variables are not evaluated until after the pipeline triggers
 - `pr` is not supported inside template files
-- There are 3 ways to define `pr`:
+
+There are 3 ways to define `pr`:
 
 ### Option 1 - Disable PR Triggers
 ```yaml
-pr: 'none'
+pr: 'none' # Pull Requests on branches will not trigger a pipeline run
 ```
-- Pull Requests on branches will not trigger a pipeline run
 
 ### Option 2 - Simplified Branch Syntax
 ```yaml
-pr:
+pr: # any Pull Request on any of these branches will trigger a pipeline run
 - main
 - feature/*
 ```
-- This lets you specify a list of branch names, and wildcards are supported
-- Any Pull Reqeust on any of these branches will trigger a pipeline run
 
 ### Option 3 - Full Syntax
 ```yaml
 pr:
-  autoCancel: boolean #optional, default is true
-  drafts: boolean #optional, default is true
+  autoCancel: boolean # optional, default is true. if more updates are made to the same PR, should in-progress validation runs be canceled?
+  drafts: boolean # optional, default is true. will 'draft' PRs cause the trigger to fire?
   branches:
     include:
     - main
     exclude:
     - feature/*
     - release/*
-  paths: #optional, default is root of the repo
+  paths: # optional, default is root of the repo
     include:
     - docs/readme.md
     - docs/app*
@@ -152,10 +151,8 @@ pr:
     - .gitignore
     - docs
 ```
-- `autoCancel`: If more updates are made to the same PR, should in-progress validation runs be canceled?
-- `drafts`: Will 'draft' PRs cause the trigger to fire?
 - `paths`: Cannot be used by itself, it can only be used in combination with `branches`
-  - Paths in Git are case-sensitive, and wildcards are supported
+  - Paths in Git are case-sensitive
 
 ---
 
@@ -164,15 +161,15 @@ pr:
 - `schedules` is optional, by default no scheduled runs will occur
 - Schedules can be defined in two places: the Azure DevOps UI and in YAML.  If schedules are defined in both places, the ones in Azure DevOps UI will take precedence
 - You cannot use variables in `schedules`
-- `schedules` is not supported inside template files
+- `schedules` are not supported inside template files
 
 Syntax
 ```yaml
 schedules:
-- cron: string
+- cron: string # must be the first property. defines the cron syntax of this schedule in UTC time
   displayName: string
-  batch: boolean #optional, default is false
-  always: boolean #optional, default is false
+  batch: boolean # optional, default is false. run a scheduled pipeline, even if the previously scheduled run is still in progress?
+  always: boolean #optional, default is false. run a scheduled pipeline, even if there were no source code changes since the last scheduled run?
   branches:
     include:
     - main
@@ -180,51 +177,44 @@ schedules:
     - feature/*
     - release/*
 ```
-- `cron` defines the cron syntax of this schedule
-  - Only the UTC timezone is supported
-- `batch`: Run a scheduled pipeline, even if the previously scheduled run is still in progress?
-- `always`: Run the scheduled pipeline, even if there were no source code changes since the last scheduled run?
 
 ---
 
 ## parameters (aka Runtime Parameters)
-- `parameters` defined at the pipeline-level are considered 'Runtime Parameters'
-- When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for each parameter
-- `parameters` is optional, and if omitted, your pipeline simply won't use any Runtime Parameters
+- `parameters` defined at the pipeline-level are also known as 'Runtime Parameters'
+- When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for these parameters
+- `parameters` are optional, and if omitted, your pipeline simply won't use any Runtime Parameters
 - Parameters are expanded early in the processing of a pipeline run, so not all variables will be available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
 Syntax
 ```yaml
 parameters:
-- name: string
-  displayName: string #optional, default is same as name
-  type: string
+- name: string # required, must be the first property. the ID used to reference this parameter in your pipeline
+  displayName: string # optional, default is same as name. the human-readable name shown in the Azure DevOps UI
+  type: string # required. see below
   default: 'someValue'
   values:
   - 'first allowed value'
   - 'second allowed value'
 ```
-- `name` is required
-  - This is what you use to reference this parameter inside your YAML code
-- `displayName`: The human-readable name you can give to the parameter
-  - This is how the parameters appears in the Azure DevOps UI when you run the pipeline manually
-- `type` is required, possible options are:
+- `type` accepts any of the following:
   - `boolean`, `number`, `object`, `string`
   - `environment`, `filePath`, `pool`, `secureFile`, `serviceConnection`
   - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
-- If a Parameter is defined, it cannot be optional, meaning you must provide a value when running the pipeline manually, or it must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
+- A parameter cannot be optional.  This means you must provide a value when running the pipeline manually, or it must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
 
 ---
 
 ## variables
 - This lets you specify variables that can be used throughout your pipeline
-- `variables` is optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels though)
+- `variables` are optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels though)
 
 General info:
 - Variable names must contain only letters, numbers, periods, or underscores
   - Variable names must not begin with these words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
 - Variables don't have a type, all variables are stored as strings
 - Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
+- Azure DevOps has many default system variables, and they all have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
 Variables can be defined at multiple places throughout your pipeline:
   - When you define a variable with the same name in multiple places, the most specific place wins
@@ -234,17 +224,16 @@ Variables can be defined at multiple places throughout your pipeline:
     - YAML stage-level
     - YAML job-level
 
-Azure DevOps comes with many system variables, these have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
-
-User-defined and System variables are both automatically converted to environment variables on the pipeline agent:
+Both User-defined variables and System variables are automatically converted to environment variables on the pipeline agent:
 - OS-specific environment variable naming standards:
   - Mac and Linux: `$NAME`
   - Windows Batch: `%NAME%`
   - Windows PowerShell: `$env:NAME`
-- When converting to environment variables:
+- When converting pipeline variables to environment variables:
   - Variable names are converted to uppercase
   - Any periods in the name are converted to underscores
-- There are 2 ways to define `variables`.  You must pick only one, as you can't mix both styles:
+
+There are 2 ways to define `variables`.  You must pick only one, as you can't mix both styles:
 
 ### Option 1 - Mapping Syntax
 This is just simple key/value pairs
@@ -260,29 +249,28 @@ variables:
 ### Option 2 - List Syntax
 ```yaml
 variables:
-- name: 'varName1'
+- name: 'varName1' # must be the first property
   value: 'value1'
-  readonly: boolean #optional, default is false
-- group: 'varGroupName' #use a variable group
-- template: 'templateFile' #use a variable template
+  readonly: boolean # optional, default is false
+- group: 'varGroupName' # specify a variable group
+- template: 'templateFile' # specify a variable template
   parameters:
     param1: 'value1'
     param2: 'value2'
 ```
-- This is considered the full syntax allowing you all possible options
+- This is considered the full syntax, it allows all possible options
 
 ---
 
 ## pool
 - This lets you specify the type of agent that will be used to run all jobs within your pipeline
-- `pool` is optional, and if omitted, your YAML pipeline will default to using `ubuntu-latest`
-- `pool` can be defined at multiple places throughout your pipeline:
-  - When you define a `pool` in multiple places, the most specific place wins
-  - The places, in order from least specific to most specific:
+- `pool` is optional, and if omitted, your YAML pipeline will default to using the Microsoft-hosted `ubuntu-latest`
+- `pool` can be defined at multiple places throughout your pipeline, and the most specific place wins.  The places, in order from least specific to most specific:
     - YAML pipeline-level (what we're discussing here)
     - YAML stage-level
     - YAML job-level
-- There are 4 ways to define `pool`:
+
+There are 4 ways to define `pool`:
 
 ### Option 1 - Use self-hosted agents with no demands
 ```yaml
@@ -310,98 +298,89 @@ pool:
 pool:
   vmImage: 'ubuntu-latest'
 ```
+- [List](https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted) of Microsoft-hosted agents
 
 ---
 
 ## resources
-- This section is used to define multiple different types of resources that can be used anywhere throughout your Pipeline
+- This section defines multiple types of resources that can be used throughout your Pipeline
 - You can define builds, containers, packages, pipelines, repositories, and webhooks
 
 ### resources - builds
-Builds are an artifact produced by an external CI system
+Builds are an artifact that's produced by an external CI system
 
 ```yaml
 resources:
   builds:
-  - build: string #only letters, number, dashes, and underscores
-    type: string
-    connection: string
-    source: string
-    version: string #optional, default is latest successful build
+  - build: string # required, must be the first property. the ID used to reference this artifact in your pipeline. accepts only letters, numbers, dashes, and underscores
+    type: string # required. specifies the type of artifact, examples: Jenkins, circleCI
+    connection: string # required. the Azure DevOps Service Connection that will be used to communicate with the external CI system
+    source: string # required. depends on the external CI system (for Jenkins this would be the Project name)
+    version: string # optional, default is latest successful build. the build number from the external CI system
     branch: string
-    trigger: boolean #optional, default is none, only accepts none or true
+    trigger: boolean # optional, default is none, accepts none or true. when this artifact completes a build, is it allowed to trigger this pipeline?
 ```
-- `build` is what you use to reference this build inside your YAML code
-- `type` refers to what type of artifact this is, for example Jenkins, or circleCI
-- `connection` refers to the Azure DevOps Service Connection that will be used to communicate with the external CI system
-- `source` is dependent on the external CI system (for Jenkins this would be the Project name)
-- `version` is the build number from the external CI system
-- `trigger`:  When this artifact completes a build, is it allowed to trigger this pipeline?
-  - Only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
-- These build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job.
+- `trigger` is only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
+- Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job.
 
 ### resources - containers
 - Specifies container images that can be used throughout your Pipeline
-- By default, Jobs run directly on the Agent machine (aka Host Jobs). You can also configure a Job to run inside a Container running on the Agent machine (aka Container Jobs).  You can even specify an individual Step/Task to run in a Container<br />![](images/container-jobs.png)
+- By default, Jobs run directly on the Agent machine (aka Host Jobs). But, you can configure a Job to run inside a Container that's running on the Agent machine (aka Container Jobs).  If desired, you can even specify a Container at the Step level<br />![](images/container-jobs.png)
   - This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
-  - This is supported on Microsoft-hosted Agents, but only for `windows-2019` and `ubuntu-*` Agents
+  - This is supported by Microsoft-hosted Agents, but only for `windows-2019` and `ubuntu-*` Agents
   - If you run self-hosted Agents, you must install Docker and make sure the DevOps Agent has permissions to access the Docker Daemon
-  - Linux Containers
-    - Must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
-  - Windows Containers
-    - Must match the kernel version of the Windows Host where it is running
-    - Must be properly configured in order to run Container Jobs (install Node.js and any dependencies)
-
-  
+  - Linux Container Images must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
+  - Windows Container Images
+    - Must match the kernel version of the Windows Host Agent where it is running
+    - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
 
 ```yaml
 containers:
-- container: string #required, only letters, numbers, dashes, and underscores
-  image: string #required
-  type: string #optional, defaults to Docker Registry
-  trigger: #optional, defaults to not enabled
-  endpoint: string
-  env:
+- container: string # required, must be the first property. the ID used to reference this image in your pipeline. accepts only letters, numbers, dashes, and underscores
+  image: string # required, examples: ubuntu:16.04, example.azurecr.io/repo:1.0.0
+  type: string # optional, defaults to Docker Registry. example: ACR
+  trigger: # optional, defaults to not enabled. if the container image is updated, will it trigger this pipeline? see more below
+  endpoint: string # the Azure DevOps Service Connection to communicate with the private registry
+  env: # variables to map into the container's environment
     string: string
-  mapDockerSocket: boolean
-  options: string
-  ports: [ string ]
-  volumes: [ string ]
-  mountReadOnly:
-    work: boolean
-    externals: boolean
-    tools: boolean
-    tasks: boolean
-  azureSubscription: string
-  resourceGroup: string
-  registry: string
-  repository: string
+  mapDockerSocket: boolean # optional, default is true. map the /var/run/docker.sock volume on container jobs?
+  options: string # arguments to pass to the container at startup
+  ports: # expose ports on the Container
+  - '8080:80' # binds port 80 on the Container to port 8080 on the host Agent
+  - '6380' # binds port 6380 on the Container to a random available port on the host Agent
+  volumes: # mount volumes on the Container
+  - '/src/dir1:/dst/dir2' # mount /src/dir1 from the host Agent to /dst/dir2 on the Container
+  mountReadOnly: # optional, all 4 default to false. which volumes should be mounted as read-only?
+    work: boolean # mount the work directory as readonly?
+    externals: boolean # mount the externals directoy as readonly? these are components required to talk with the Agent
+    tools: boolean # mount the tools directory as readonly? these are installable tools like Python and Ruby
+    tasks: boolean # mount the tasks directory as readonly? these are tasks required by the job
+  # extra / unnecessary? / need more info / ACR specific ?
+  azureSubscription: string # the Azure DevOps Service Connection to communicate with ACR
+  resourceGroup: string # the Resource Group where the ACR is located
+  registry: string # name of the registry in ACR
+  repository: string # name of the repo in ACR
 ```
-- `container` is what you use to reference this image inside your YAML code
-- `image` example: `ubuntu:16.04`
-- `type` specifies what type of container registry, for example `ACR`
-- `trigger`: If the container image is updated, will it trigger this pipeline?
-  - Option 1 - Disable
-    ```yaml
-    trigger: 'none'
-    ```
-  - Option 2 - Shortcut - Trigger on all image tags
-    ```yaml
-    trigger: 'true'
-    ```
-  - Option 3 - Full Syntax - Trigger on all image tags
-    ```yaml
-    trigger:
-      enabled: 'true'
-    ```
-  - Option 4 - Full Syntax - Trigger on specific image tags
-    ```yaml
-    trigger:
-      tags:
-        include:
-        - 'ubuntu:16.04'
-        exclude:
-        - 'ubuntu:18.04'
+- `trigger` options:
+  ```yaml
+  # option 1 - Disable
+  trigger: 'none'
+  
+  # option 2 - Shortcut - Trigger on all image tags
+  trigger: 'true'
+
+  # option 3 - Full Syntax - Trigger on all image tags
+  trigger:
+    enabled: 'true'
+
+  # option 4 - Full Syntax - Trigger on specific image tags
+  trigger:
+    tags:
+      include:
+      - 'ubuntu:16.04'
+      exclude:
+      - 'ubuntu:18.04'
+  ```
 ---
 
 1. stages
