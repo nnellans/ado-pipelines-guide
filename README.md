@@ -10,10 +10,7 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 
 There are two main types of information defined in a YAML Pipeline:
 - One, pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
-- Two, the actual work being done by the Pipeline.  There are three different ways you can define the work:<br />![](images/pipeline-options.png)
-  - The standard way by defining `Stages`, `Jobs`, and `Steps`.  This way will always work, no matter how many Stages or Jobs you have.
-  - If you have one Stage with multiple Jobs, then you can omit the `Stages` layer.  So, all you need to define is `Jobs` and `Steps`.
-  - If you have one Stage with one Job, then you can omit both the `Stages` and `Jobs` layer.  So, all you need to define is `Steps`.
+- Two, the actual work being done by the Pipeline.
 
 ---
 
@@ -37,11 +34,9 @@ Let's start by going over the common fields that can be defined at the root of t
   - [webhooks](#resources-webhooks)
 - lockBehavior
 
----
-
 ## name
 ```yaml
-name: string # the name to use for each 'run' of the pipeline. optional, default is date.iterator (see below)
+name: string # the name to use for each 'run' of the pipeline. more info below
 ```
 - Not to be confused with the actual name of the pipeline itself (which is defined in the Azure DevOps UI)
 - This field is optional.  The default name of each run will be in this format: `yyyymmdd.xx` where:
@@ -49,18 +44,14 @@ name: string # the name to use for each 'run' of the pipeline. optional, default
   - `xx` is an iterator, which starts at `1` and increments with each run of the pipeline
 - Expressions are allowed in the value
 
----
-
 ## appendCommitMessageToRunName
 ```yaml
 appendCommitMessageToRunName: boolean # is the latest Git commit message appended to the end of the run name? optional, default is true
 ```
 
----
-
 ## trigger (aka CI Trigger)
 - Specifies the Continuous Integration (CI) triggers that will be used to automatically start the pipeline
-- This looks for pushes to branches and/or tags on the repo where the pipeline's YAML file is stored
+- This looks for pushes to branches and/or tags on the repo where the pipeline is stored
 - This field is optional.  By default, a push to any branch of the repo will cause the pipeline to be triggered
 - You cannot use variables in `triggers`, as variables are not evaluated until after the pipeline triggers
 - `triggers` are not supported inside template files
@@ -102,11 +93,9 @@ trigger:
 - `paths`: Cannot be used by itself, it can only be used in combination with `branches`
   - Paths in Git are case-sensitive
 
----
-
 ## pr (aka PR Trigger)
 - Specifies the Pull Request (PR) triggers that will be used to automatically start the pipeline
-- This looks for Pull Requests that are opened on the repo where the pipeline's YAML file is stored
+- This looks for Pull Requests that are opened on the repo where the pipeline is stored
 - This field is optional.  By default, a PR opened on any branch of the repo will cause the pipeline to be triggered
 - YAML PR triggers are only supported for GitHub and BitBucket Cloud
 - You cannot use variables in `pr`, as variables are not evaluated until after the pipeline triggers
@@ -143,8 +132,6 @@ pr:
 - `paths`: Cannot be used by itself, it can only be used in combination with `branches`
   - Paths in Git are case-sensitive
 
----
-
 ## schedules (aka Scheduled Trigger)
 - Scheduled triggers configure a pipeline to run on a schedule
 - `schedules` is optional, by default no scheduled runs will occur
@@ -166,8 +153,6 @@ schedules:
     - feature/*
     - release/*
 ```
-
----
 
 ## parameters (aka Runtime Parameters)
 - `parameters` defined at the pipeline-level are also known as 'Runtime Parameters'
@@ -191,8 +176,6 @@ parameters:
   - `environment`, `filePath`, `pool`, `secureFile`, `serviceConnection`
   - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
 - A parameter cannot be optional.  This means you must provide a value when running the pipeline manually, or the parameter must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
-
----
 
 ## variables
 Here you can specify variables that can be referenced throughout your pipeline
@@ -223,7 +206,7 @@ Both User-defined variables and System variables are automatically converted to 
   - Variable names are converted to uppercase
   - Any periods in the name are converted to underscores
 
-There are 2 ways to define `variables`.  You must pick only one, as you can't mix both styles:
+There are 2 ways to define `variables`:
 ```yaml
 # Option 1 - Mapping Syntax
 # Does not support Variable Groups, Variable Templates, or setting a variable to read-only
@@ -245,8 +228,6 @@ variables:
     param1: 'value1'
     param2: 'value2'
 ```
-
----
 
 ## pool
 - This lets you specify the type of Agent that will be used to run all Jobs within your pipeline
@@ -280,8 +261,6 @@ pool:
   vmImage: 'ubuntu-latest'
 ```
 - [List](https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted) of Microsoft-hosted agents
-
----
 
 ## resources
 This section defines multiple types of resources that can be used throughout your Pipeline. You can define builds, containers, packages, pipelines, repositories, and webhooks.  Each one of these resources can be used at various different points throughout your Pipeline.
