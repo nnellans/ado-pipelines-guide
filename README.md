@@ -36,7 +36,7 @@ Let's start by going over the common fields that can be defined at the root of t
 
 ## name
 ```yaml
-name: string # the name to use for each 'run' of the pipeline. more info below
+name: string # the name to use for each 'run' of the pipeline. see more below
 ```
 - Not to be confused with the actual name of the pipeline itself (which is defined in the Azure DevOps UI)
 - This field is optional.  The default name of each run will be in this format: `yyyymmdd.xx` where:
@@ -68,14 +68,14 @@ trigger: # any push to any of these branches will trigger a pipeline run
 
 # Option 3 - Full Syntax
 trigger:
-  batch: boolean # more info below. optional, default is false
+  batch: boolean # see more below. optional, default is false
   branches:
     include:
     - main
     exclude:
     - feature/*
     - release/*
-  paths: # more info below. optional, default is root of the repo
+  paths: # see more below. optional, default is root of the repo
     include:
     - docs/readme.md
     - docs/app*
@@ -121,7 +121,7 @@ pr:
     exclude:
     - feature/*
     - release/*
-  paths: # more info below. optional, default is root of the repo
+  paths: # see more below. optional, default is root of the repo
     include:
     - docs/readme.md
     - docs/app*
@@ -165,7 +165,7 @@ Syntax
 parameters:
 - name: string # the symbolic name used to reference this parameter throughout your pipeline. required, must be the first property
   displayName: string # the human-readable name shown in the Azure DevOps UI. optional, default is same as name
-  type: string # more info below. required
+  type: string # see more below. required
   default: 'someValue'
   values:
   - 'first allowed value'
@@ -417,10 +417,10 @@ resources:
   repositories:
   - repository: string  # the symbolic name used to reference this repo. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     type: string  # the type of repo. accepts only git, github, githubenterprise, and bitbucket
-    name: string  # the repository name, what you put here depends on the value of type. more info below
+    name: string  # the repository name, what you put here depends on the value of type. see more below
     ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
     endpoint: string  # # the Azure DevOps Service Connection used to communicate with the repo
-    trigger:  # if the repository is updated, will it trigger this pipeline? more info below. optional, the default is none
+    trigger:  # if the repository is updated, will it trigger this pipeline? see more below. optional, the default is none
 ```
 - Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `checkout` Task in your Job.
 - For Azure Repos Git use `type: git`
@@ -447,7 +447,7 @@ resources:
       - 'main'
       exclude:
       - 'feature/*'
-    paths: # more info below. optional, default is root of the repo
+    paths: # see more below. optional, default is root of the repo
       include:
       - '/src'
       exclude:
