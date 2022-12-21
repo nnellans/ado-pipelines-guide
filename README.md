@@ -163,7 +163,7 @@ schedules:
 Syntax
 ```yaml
 parameters:
-- name: string # the ID used to reference this parameter throughout your pipeline. required, must be the first property
+- name: string # the symbolic name used to reference this parameter throughout your pipeline. required, must be the first property
   displayName: string # the human-readable name shown in the Azure DevOps UI. optional, default is same as name
   type: string # more info below. required
   default: 'someValue'
@@ -271,15 +271,14 @@ These are artifacts produced by an external CI system
 ```yaml
 resources:
   builds:
-  - build: string # the ID used to reference this artifact throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - build: string # the symbolic name used to reference this artifact throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     type: string # specifies the type of artifact. required. examples: Jenkins, circleCI
     connection: string # the Azure DevOps Service Connection used to communicate with the external CI system. required
     source: string # depends on the external CI system (for Jenkins this would be the Project name). required
     version: string # the build number from the external CI system. optional, default is latest successful build
     branch: string
-    trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? optional, default is none. accepts only none or true
+    trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server. optional, default is none. accepts only none or true
 ```
-- The `trigger` option is only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server
 - Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job
 
 ### <ins>Resources: containers</ins>
@@ -299,7 +298,7 @@ General Info:
 ```yaml
 resources:
   containers:
-  - container: string # the ID used to reference this image throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - container: string # the symbolic name used to reference this image throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     image: string # required. examples: ubuntu:16.04, company.azurecr.io/repo:1.0.0
     type: string # optional, defaults to Docker Registry. example: ACR
     trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
@@ -352,7 +351,7 @@ These are nuget or npm packages stored on GitHub Packages
 ```yaml
 resources:
   packages:
-  - package: string # the ID used to reference this package throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - package: string # the symbolic name used to reference this package throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     type: string # the type of the package. required. examples: nuget, npm
     connection: string # the Azure DevOps Service Connection used to communicate with GitHub. required
     name: string # the repo and name of the package. required. example: someRepo/somePackage
@@ -368,16 +367,16 @@ These are Artifacts produced by a pipeline
 ```yaml
 resources:
   pipelines:
-  - pipeline: string # the ID used to reference this pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - pipeline: string # the symbolic name used to reference this pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     project: string # the azure devops project where this pipeline resource is located. optional, default is the current azure devops project
     source: string # the name of the pipeline that produced the artifact
     version: string # the pipeline run number that produced the artifact. optional, default is the latest successful run across all stages. used only for manual or scheduled triggers
-    branch: string # branch to pick the artifact. optional, defaults to all branches. used only for manual or scheduled triggers
-    tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. used only for manual or scheduled triggers
+    branch: string # branch to pick the artifact. optional, defaults to all branches. this is used as a default for manual or scheduled triggers
+    tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. this is used as a default for manual or scheduled triggers
     - string
     trigger: # if the pipeline artifact is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
 ```
-- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are downloaded by 'deploy' jobs.  So, in order for your 'regular' Job to use them, you must first include a 'download' Task in your Job
+- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are automatically downloaded by 'deploy' jobs.  In order for 'regular' Jobs to use them, you must first include a 'download' Task in your Jobs
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -416,7 +415,7 @@ These are source code repositories
 ```yaml
 resources:
   repositories:
-  - repository: string  # the ID used to reference this repo. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - repository: string  # the symbolic name used to reference this repo. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     type: string  # the type of repo. accepts only git, github, githubenterprise, and bitbucket
     name: string  # the repository name, what you put here depends on the value of type. more info below
     ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
@@ -517,7 +516,35 @@ Steps
 ---
 
 Environments
+
+---
+
 Agents
+- In order to do any work, Azure Pipelines needs at least one Agent
+- Agents are computing infrastructure with the Agent software installed
+- Agents can run one Job at a time
+- The Agent can run the Job directly, or it can run the Job inside a Container
+
+Microsoft-Hosted Agents
+- Each Job is run on a fresh virtual machine
+- Each virtual machine is discarded after every job
+- Supports both Host Jobs and Container Jobs
+
+Self-Hosted Agents
+- This is compute infrastructure that you manage, you install the Agent software, and configure the system with whatever tools are necessary
+- It is recommended to install only one copy of the Agent software per machine
+- Mac, Linux, and Windows are all supported
+- You can even run an Agent inside of a Container, only Docker is supported
+  - windowsservercore image on Windows
+  - ubuntu image on Linux
+- You can use an auto-scaled Virtual Machine Scale Set in azure to run your Agents
+  - You specify number of agents to keep on standby and the max number of VMs in the scaleset
+  - Azure DevOps takes care of auto-scaling for you
+
+
+
+---
+
 Artifacts
 
 ---
