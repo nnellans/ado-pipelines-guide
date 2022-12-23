@@ -218,7 +218,7 @@ variables:
 ## pool
 - This lets you specify the type of Agent that will be used to run all Jobs within your pipeline
 - `pool` is optional, and if omitted, your YAML pipeline will default to using the Microsoft-hosted `ubuntu-latest`
-- `pool` can be defined at multiple places throughout your pipeline:
+- `pool` can be defined at multiple places throughout your pipeline:<br />![](images/pipeline-pool.png)
   - The most specific place wins
   - The places, in order from least specific to most specific:
     - YAML pipeline-level (what we're discussing here)
