@@ -6,14 +6,6 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 
 ---
 
-# High-Level Pipeline Structure
-
-There are two main types of information defined in a YAML Pipeline:
-- One, pipeline-level information. This includes things like triggers, parameters, variables, agent pools, repositories, etc.
-- Two, the actual work being done by the Pipeline.
-
----
-
 # Pipeline-level information
 
 Let's start by going over the common fields that can be defined at the root of the Pipeline, they are:
@@ -42,7 +34,7 @@ name: string # the name to use for each 'run' of the pipeline. see more below
 - This field is optional.  The default name of each run will be in this format: `yyyymmdd.xx` where:
   - `yyyymmdd` is the current date
   - `xx` is an iterator, which starts at `1` and increments with each run of the pipeline
-- Expressions are allowed in the value
+- Expressions are allowed in the value in order to make the run name unique
 
 ## appendCommitMessageToRunName
 ```yaml
@@ -50,16 +42,15 @@ appendCommitMessageToRunName: boolean # is the latest Git commit message appende
 ```
 
 ## trigger (aka CI Trigger)
-- Specifies the Continuous Integration (CI) triggers that will be used to automatically start the pipeline
-- This looks for pushes to branches and/or tags on the repo where the pipeline is stored
+- Looks for pushes to branches and/or tags on the repo where the pipeline is stored
 - This field is optional.  By default, a push to any branch of the repo will cause the pipeline to be triggered
-- You cannot use variables in `triggers`, as variables are not evaluated until after the pipeline triggers
+- You cannot use variables in `triggers`, as variables are evaluated after triggers are evaluated
 - `triggers` are not supported inside template files
 
 There are 3 ways to define `triggers`:
 ```yaml
 # Option 1 - Disable CI Triggers
-trigger: 'none' # pushes to branches will not trigger the pipeline
+trigger: 'none'
 
 # Option 2 - Simplified Branch Syntax
 trigger: # any push to any of these branches will trigger a pipeline run
@@ -94,17 +85,16 @@ trigger:
   - Paths in Git are case-sensitive
 
 ## pr (aka PR Trigger)
-- Specifies the Pull Request (PR) triggers that will be used to automatically start the pipeline
-- This looks for Pull Requests that are opened on the repo where the pipeline is stored
+- Looks for Pull Requests that are opened on the repo where the pipeline is stored
 - This field is optional.  By default, a PR opened on any branch of the repo will cause the pipeline to be triggered
 - YAML PR triggers are only supported for GitHub and BitBucket Cloud
-- You cannot use variables in `pr`, as variables are not evaluated until after the pipeline triggers
+- You cannot use variables in `pr`, as variables are evaluated after triggers are evaluated
 - `pr` is not supported inside template files
 
 There are 3 ways to define `pr`:
 ```yaml
 # Option 1 - Disable PR Triggers
-pr: 'none' # Pull Requests on branches will not trigger a pipeline run
+pr: 'none'
 
 # Option 2 - Simplified Branch Syntax
 pr: # any Pull Request on any of these branches will trigger a pipeline run
@@ -133,10 +123,9 @@ pr:
   - Paths in Git are case-sensitive
 
 ## schedules (aka Scheduled Trigger)
-- Scheduled triggers configure a pipeline to run on a schedule
 - `schedules` is optional, by default no scheduled runs will occur
-- Schedules can be defined in two places: the Azure DevOps UI and in your pipeline's YAML.  If schedules are defined in both places, the schedules in Azure DevOps UI will take precedence
-- You cannot use variables in `schedules`
+- Schedules can be defined in two places: the Azure DevOps UI and in your pipeline's YAML.  If schedules are defined in both places, then only schedules in Azure DevOps UI will run
+- You cannot use variables in `schedules`, as variables are evaluated after triggers are evaluated
 - `schedules` are not supported inside template files
 
 Syntax
@@ -155,10 +144,8 @@ schedules:
 ```
 
 ## parameters (aka Runtime Parameters)
-- `parameters` defined at the pipeline-level are also known as 'Runtime Parameters'
-- When you manually run the pipeline from the Azure DevOps UI, you will be able to select/enter values for these parameters
 - `parameters` are optional, and if omitted, your pipeline simply won't use any Runtime Parameters
-- Parameters are expanded early in the processing of a pipeline run, so not all variables will be available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables)
+- Parameters are expanded early on, so only certain variables are available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables)
 
 Syntax
 ```yaml
@@ -171,15 +158,13 @@ parameters:
   - 'first allowed value'
   - 'second allowed value'
 ```
-- `type` accepts any of the following:
+- Parameters must have a `type`, the accepted values are:
   - `boolean`, `number`, `object`, `string`
   - `environment`, `filePath`, `pool`, `secureFile`, `serviceConnection`
   - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
 - A parameter cannot be optional.  This means you must provide a value when running the pipeline manually, or the parameter must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
 
 ## variables
-Here you can specify variables that can be referenced throughout your pipeline
-
 `variables` are optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels though)
 
 General info:
@@ -189,7 +174,8 @@ General info:
 - Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
 - Azure DevOps uses many default system variables, and they all have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
-Variables can be defined at multiple places throughout your pipeline:
+Variables can be defined at multiple places throughout your pipeline:<br />
+
   - When you define a variable with the same name in multiple places, the most specific place wins
   - The places, in order from least specific to most specific:
     - Azure DevOps UI
