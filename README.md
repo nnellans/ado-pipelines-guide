@@ -124,7 +124,7 @@ pr:
 
 ## schedules (aka Scheduled Trigger)
 - `schedules` is optional, by default no scheduled runs will occur
-- Schedules can be defined in two places: the Azure DevOps UI and in your pipeline's YAML.  If schedules are defined in both places, then only schedules in Azure DevOps UI will run
+- Schedules can be defined in two places: the Azure DevOps UI and in your pipeline's YAML.  If schedules are defined in both places, then only schedules in Azure DevOps UI will run<br />![](images/pipeline-schedules.png)
 - You cannot use variables in `schedules`, as variables are evaluated after triggers are evaluated
 - `schedules` are not supported inside template files
 
@@ -175,7 +175,7 @@ General info:
 - Azure DevOps uses many default system variables, and they all have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
 Variables can be defined at multiple places throughout your pipeline:<br />
-
+![](images/pipeline-variables.png)
   - When you define a variable with the same name in multiple places, the most specific place wins
   - The places, in order from least specific to most specific:
     - Azure DevOps UI
