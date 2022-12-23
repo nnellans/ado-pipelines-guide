@@ -249,7 +249,7 @@ pool:
 - [List](https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted) of Microsoft-hosted agents
 
 ## resources
-This section defines multiple types of resources that can be used throughout your Pipeline. You can define builds, containers, packages, pipelines, repositories, and webhooks.  Each one of these resources can be used at various different points throughout your Pipeline.
+You can define builds, containers, packages, pipelines, repositories, and webhooks.  Each one of these resources can be consumed by your Pipeline, or used to trigger your Pipeline
 
 ### <ins>Resources: builds</ins>
 These are artifacts produced by an external CI system
@@ -257,7 +257,7 @@ These are artifacts produced by an external CI system
 ```yaml
 resources:
   builds:
-  - build: string # the symbolic name used to reference this artifact throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - build: string # the symbolic name used to reference this artifact. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     type: string # specifies the type of artifact. required. examples: Jenkins, circleCI
     connection: string # the Azure DevOps Service Connection used to communicate with the external CI system. required
     source: string # depends on the external CI system (for Jenkins this would be the Project name). required
@@ -270,21 +270,10 @@ resources:
 ### <ins>Resources: containers</ins>
 These are container images
 
-By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option to run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
-
-General Info:
-- Not all Agents support running Container Jobs. This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
-- This is supported by the following Microsoft-hosted Agents: `windows-2019`, `windows-2022`, and `ubuntu-*`
-- If you run self-hosted Agents, you must install Docker and make sure the local Agent has permissions to access the Docker Daemon
-- Linux Container Images must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
-- Windows Container Images:
-  - Must match the kernel version of the Windows Host Agent where it is running (for example, 2019 container image on a 2019 agent)
-  - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
-
 ```yaml
 resources:
   containers:
-  - container: string # the symbolic name used to reference this image throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - container: string # the symbolic name used to reference this image. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     image: string # required. examples: ubuntu:16.04, company.azurecr.io/repo:1.0.0
     type: string # optional, defaults to Docker Registry. example: ACR
     trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
@@ -337,7 +326,7 @@ These are nuget or npm packages stored on GitHub Packages
 ```yaml
 resources:
   packages:
-  - package: string # the symbolic name used to reference this package throughout your pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - package: string # the symbolic name used to reference this package. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     type: string # the type of the package. required. examples: nuget, npm
     connection: string # the Azure DevOps Service Connection used to communicate with GitHub. required
     name: string # the repo and name of the package. required. example: someRepo/somePackage
@@ -406,7 +395,7 @@ resources:
     name: string  # the repository name, what you put here depends on the value of type. see more below
     ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
     endpoint: string  # # the Azure DevOps Service Connection used to communicate with the repo
-    trigger:  # if the repository is updated, will it trigger this pipeline? see more below. optional, the default is none
+    trigger:  # if the repository is updated, will it trigger this pipeline? only supported for Azure Repos Git. see more below. optional, the default is none
 ```
 - Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `checkout` Task in your Job.
 - For Azure Repos Git use `type: git`
@@ -416,7 +405,7 @@ resources:
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
   - For any other allowed `type`
     - Set `name: orgName/someRepo` or `name: userName/someRepo`
-- `trigger` is only supported for Azure Repos Git:
+- `trigger` options in depth:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
@@ -504,6 +493,17 @@ Steps
 Environments
 
 ---
+
+By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option to run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
+
+General Info:
+- Not all Agents support running Container Jobs. This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
+- This is supported by the following Microsoft-hosted Agents: `windows-2019`, `windows-2022`, and `ubuntu-*`
+- If you run self-hosted Agents, you must install Docker and make sure the local Agent has permissions to access the Docker Daemon
+- Linux Container Images must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
+- Windows Container Images:
+  - Must match the kernel version of the Windows Host Agent where it is running (for example, 2019 container image on a 2019 agent)
+  - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
 
 Agents
 - In order to do any work, Azure Pipelines needs at least one Agent
