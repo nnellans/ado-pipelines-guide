@@ -263,9 +263,10 @@ resources:
     source: string # depends on the external CI system (for Jenkins this would be the Project name). required
     version: string # the build number from the external CI system. optional, default is latest successful build
     branch: string
-    trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? only supported for hosted Jenkins where Azure DevOps has line of sight with Jenkins server. optional, default is none. accepts only none or true
+    trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? optional, default is none. accepts only none or true
 ```
-- Build resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `downloadBuild` Task in your Job
+- Triggers are only supported for hosted Jenkins, where Azure DevOps has line of sight with Jenkins server
+- Build resources are not automatically downloaded by Jobs.  To consume Builds use a [downloadBuild](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download-build) Step or a [DownloadBuildArtifacts](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-build-artifacts-v1) Task
 
 ### <ins>Resources: containers</ins>
 These are container images
@@ -276,7 +277,7 @@ resources:
   - container: string # the symbolic name used to reference this image. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     image: string # required. examples: ubuntu:16.04, company.azurecr.io/repo:1.0.0
     type: string # optional, defaults to Docker Registry. example: ACR
-    trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
+    trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, default is none
     endpoint: string # the Azure DevOps Service Connection used to communicate with the private registry
     env: # variables to map into the container's environment
       string: string
@@ -298,6 +299,7 @@ resources:
     registry: string # name of the registry in ACR
     repository: string # name of the repo in ACR
 ```
+- To consume a Container resource, use a Container Job, a Step Target, or a Service Container
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -334,34 +336,34 @@ resources:
     tag: string
     trigger: string # if the package is updated, will it trigger this pipeline? optional, default is none. accepts only none or true
 ```
-- Package resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `getPackage` Task in your Job
+- Package resources are not automatically downloaded by Jobs.  To consume Packages use a [getPackage](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-get-package) Step or a [DownloadPackage](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-package-v1) Task
 
 ### <ins>Resources: pipelines</ins>
-These are Artifacts produced by a pipeline
+These are other Azure DevOps YAML Pipelines
 
 ```yaml
 resources:
   pipelines:
-  - pipeline: string # the symbolic name used to reference this pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+  - pipeline: string # the symbolic name used to reference this other pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     project: string # the azure devops project where this pipeline resource is located. optional, default is the current azure devops project
     source: string # the name of the pipeline that produced the artifact
     version: string # the pipeline run number that produced the artifact. optional, default is the latest successful run across all stages. used only for manual or scheduled triggers
     branch: string # branch to pick the artifact. optional, defaults to all branches. this is used as a default for manual or scheduled triggers
     tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. this is used as a default for manual or scheduled triggers
     - string
-    trigger: # if the pipeline artifact is updated, will it trigger this pipeline? see more below. optional, defaults to not enabled
+    trigger: # if the other pipeline is ran successfully, will it trigger this pipeline? see more below. optional, default is none
 ```
-- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are automatically downloaded by 'deploy' jobs.  In order for 'regular' Jobs to use them, you must first include a 'download' Task in your Jobs
+- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are automatically downloaded by 'deploy' jobs.  To consume Pipeline resources in 'regular' Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step or a [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
   
-  # option 2 - Trigger on all branches (shortcut syntax)
+  # option 2 - Trigger on a successful run from all branches (shortcut syntax)
   trigger: 'true'
 
-  # option 3 - Trigger on a list of branches (simplified syntax)
-  trigger: # an update to any of these branches will trigger the pipeline
+  # option 3 - Trigger on a successful run from a specific list of branches (simplified syntax)
+  trigger:
     enabled: boolean # optional, default is true
     branches:
     - 'main'
@@ -370,14 +372,14 @@ resources:
   # option 4 - Full Syntax
   trigger:
     enabled: boolean # optional, default is true
-    branches: # list of branches that when matched will trigger the pipeline
+    branches: # trigger on a successful run from a specific list of branches
       include:
       - 'main'
       exclude:
       - 'feature/*'
     tags: # list of tags that when matched will trigger the pipeline
     - 'three'
-    stages: # list of stages that when complete will trigger the pipeline
+    stages: # list of Pipeline Stages that must be completed successfully
     - 'four'
   ```
   - `tags` are AND'ed, meaning all of the tags listed must be present
