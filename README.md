@@ -345,9 +345,9 @@ These are other Azure DevOps YAML Pipelines
 resources:
   pipelines:
   - pipeline: string # the symbolic name used to reference this other pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
-    project: string # the azure devops project where this pipeline resource is located. optional, default is the current azure devops project
-    source: string # the name of the pipeline that produced the artifact
-    version: string # the pipeline run number that produced the artifact. optional, default is the latest successful run across all stages. used only for manual or scheduled triggers
+    project: string # the azure devops project where this other pipeline is located. optional, default is the current azure devops project
+    source: string # the name of this other pipeline
+    version: string # the run name from this other pipeline. optional, default is the latest successful run across all stages. this is used as a default for manual or scheduled triggers
     branch: string # branch to pick the artifact. optional, defaults to all branches. this is used as a default for manual or scheduled triggers
     tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. this is used as a default for manual or scheduled triggers
     - string
