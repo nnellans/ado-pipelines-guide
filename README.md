@@ -347,13 +347,17 @@ resources:
   - pipeline: string # the symbolic name used to reference this other pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     project: string # the azure devops project where this other pipeline is located. optional, default is the current azure devops project
     source: string # the name of this other pipeline
+    trigger: # if the other pipeline is ran successfully, will it trigger this pipeline? see more below. optional, default is none
+    # the next 3 options are used 
     version: string # the run name from this other pipeline. optional, default is the latest successful run across all stages. this is used as a default for manual or scheduled triggers
     branch: string # branch to pick the artifact. optional, defaults to all branches. this is used as a default for manual or scheduled triggers
-    tags: # List of tags required on the pipeline to pickup default artifacts. tags are AND'ed, meaning all tags must be present. optional. this is used as a default for manual or scheduled triggers
+    tags: # List of tags required on the other pipeline. optional. this is used as a default for manual or scheduled triggers
     - string
-    trigger: # if the other pipeline is ran successfully, will it trigger this pipeline? see more below. optional, default is none
 ```
 - Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are automatically downloaded by 'deploy' jobs.  To consume Pipeline resources in 'regular' Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step or a [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
+- When an update to the Pipeline Resource causes the parent Pipeline to trigger:
+  - If the Pipeline Resource and the parent Pipeline are from the same repository, and the Pipeline Resource triggers because of an update to Branch A, then the parent Pipeline will be run using that same Branch A.
+  - If the Pipeline Resource and the parent Pipeline are from different repositories, then the parent Pipeline will always run using its own default Branch, it doesn't matter which branch the Pipeline Resource was updated on
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
