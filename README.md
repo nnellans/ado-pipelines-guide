@@ -445,7 +445,16 @@ resources:
 
 ### <ins>Resources: webhooks</ins>
 These are external services
-
+```yaml
+resources:
+  webhooks:
+  - webhook: string # the symbolic name used to reference this repo. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+    connection: string # the name of the Azure DevOps Service Connection
+    type: string # the name of the webhook extension. leave this empty if its offline webhook.. 
+    filters:
+    - path: xxx
+      value: xxx
+```
 ---
 
 1. stages
