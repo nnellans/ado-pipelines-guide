@@ -400,7 +400,7 @@ resources:
     type: string  # the type of repo. accepts only git, github, githubenterprise, and bitbucket
     name: string  # the repository name, what you put here depends on the value of type. see more below
     ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
-    endpoint: string  # # the Azure DevOps Service Connection used to communicate with the repo
+    endpoint: string  # the Azure DevOps Service Connection used to communicate with the repo
     trigger:  # if the repository is updated, will it trigger this pipeline? only supported for Azure Repos Git. see more below. optional, the default is none
 ```
 - Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `checkout` Task in your Job.
@@ -411,6 +411,7 @@ resources:
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
   - For any other allowed `type`
     - Set `name: orgName/someRepo` or `name: userName/someRepo`
+- To reiterate, Repository Triggers are ONLY supported for Azure Repos Git
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -444,17 +445,22 @@ resources:
     - Paths in Git are case-sensitive
 
 ### <ins>Resources: webhooks</ins>
-These are external services
+These are external services that can be used to trigger your Pipeline
+
 ```yaml
 resources:
   webhooks:
   - webhook: string # the symbolic name used to reference this repo. required, must be the first property. accepts only letters, numbers, dashes, and underscores
-    connection: string # the name of the Azure DevOps Service Connection
-    type: string # the name of the webhook extension. leave this empty if its offline webhook.. 
-    filters:
-    - path: xxx
-      value: xxx
+    connection: string # the name of the Azure DevOps Service Connection tied to this Webhook. required
+    type: string # the name of the webhook extension, leave this empty if this is an offline webhook
+    filters: # list of filters for this trigger
+    - path: string # the json path to select data from the event payload
+      value: string # the expected value for the filter to match
 ```
+- `filters` are AND'ed, meaning all of the filters listed must be matched
+
+To consume the webhook's JSON payload by use a parameter in the format `${{ parameters.webhookSymbolicName.jsonPath }}` 
+
 ---
 
 1. stages
