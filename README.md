@@ -459,7 +459,9 @@ resources:
 ```
 - `filters` are AND'ed, meaning all of the filters listed must be matched
 
-To consume the webhook's JSON payload by use a parameter in the format `${{ parameters.webhookSymbolicName.jsonPath }}` 
+To consume the webhook's JSON payload by use a parameter in the format `${{ parameters.webhookSymbolicName.jsonPath }}`
+
+When creating the Webhook in the external service, make sure to point it at:  `https://dev.azure.com/yourOrgName/_apis/public/distributedtask/webhooks/yourWebhookSymbolicName?api-version=6.0-preview`
 
 ---
 
