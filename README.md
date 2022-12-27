@@ -6,9 +6,9 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 
 ---
 
-# Pipeline-level information
+# Table of Contents
 
-Let's start by going over the common fields that can be defined at the root of the Pipeline, they are:
+**Part 1 - Pipeline-level information**:
 - [name](#name)
 - [appendCommitMessageToRunTime](#appendcommitmessagetorunname)
 - [trigger](#trigger-aka-ci-trigger)
@@ -24,7 +24,16 @@ Let's start by going over the common fields that can be defined at the root of t
   - [pipelines](#resources-pipelines)
   - [repositories](#resources-repositories)
   - [webhooks](#resources-webhooks)
-- lockBehavior
+- [lockBehavior](#lockbehavior)
+
+**Part 2 - Defining the work done by the Pipeline**:
+- stages
+- jobs
+- steps
+
+---
+
+# Part 1 - Pipeline-level Information
 
 ## name
 ```yaml
@@ -304,7 +313,7 @@ resources:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
-  
+
   # option 2 - Trigger on all image tags (shortcut syntax)
   trigger: 'true'
 
@@ -348,7 +357,7 @@ resources:
     project: string # the azure devops project where this other pipeline is located. optional, default is the current azure devops project
     source: string # the name of this other pipeline
     trigger: # if the other pipeline is ran successfully, will it trigger this pipeline? see more below. optional, default is none
-    # the next 3 options are used 
+    # the next 3 options are used
     version: string # the run name from this other pipeline. optional, default is the latest successful run across all stages. this is used as a default for manual or scheduled triggers
     branch: string # branch to pick the artifact. optional, defaults to all branches. this is used as a default for manual or scheduled triggers
     tags: # List of tags required on the other pipeline. optional. this is used as a default for manual or scheduled triggers
@@ -362,7 +371,7 @@ resources:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
-  
+
   # option 2 - Trigger on a successful run from all branches (shortcut syntax)
   trigger: 'true'
 
@@ -406,7 +415,7 @@ resources:
 - Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `checkout` Task in your Job.
 - For Azure Repos Git use `type: git`
 - What you pick for `type` dictates what you should put for `name`
-  - For `type: git`
+  - For `type: git` (Azure Repos Git)
     - If the repo exists in the same DevOps Project, then set `name: someRepo`
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
   - For any other allowed `type`
@@ -421,7 +430,7 @@ resources:
   trigger:
   - 'main'
   - 'release/*'
-  
+
   # option 3 - Full Syntax
   trigger:
     branches:
@@ -458,51 +467,108 @@ resources:
       value: string # the expected value for the filter to match
 ```
 - `filters` are AND'ed, meaning all of the filters listed must be matched
+- To consume the webhook's JSON payload in your Pipeline, you can use a parameter with the format <br />`${{ parameters.webhookSymbolicName.jsonPath }}`
+- When creating the Webhook in the external service, make sure to point it at <br />`https://dev.azure.com/yourOrgName/_apis/public/distributedtask/webhooks/yourWebhookSymbolicName?api-version=6.0-preview`
 
-To consume the webhook's JSON payload in your Pipeline, you can use a parameter with the format <br />`${{ parameters.webhookSymbolicName.jsonPath }}`
+## lockBehavior
+This lets you control the behavior of exclusive lock checks on protected resources.  Protected resources include: Agent Pools, Secret Variables (inside Variable Groups), Secure Files, Service Connections, Environments, and Repositories.
 
-When creating the Webhook in the external service, make sure to point it at:  `https://dev.azure.com/yourOrgName/_apis/public/distributedtask/webhooks/yourWebhookSymbolicName?api-version=6.0-preview`
+If a Protected Resource is configured with an exclusive lock check that means only one run of the Pipeline can access that Protected Resource at a time.  While that one run of the Pipeline is executing there may be more runs of the Pipeline that are queued up and waiting to go.  What happens with these queued Pipelines depends on the value of the `lockBehavior` parameter.
 
----
+```yaml
+lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
+```
+- `runLatest` all runs of the Pipeline that are waiting are cancelled, except for the latest run
+- `sequential` all runs of the Pipeline are allowed to execute one-by-one when it is their turn
 
-1. stages
-2. jobs
-3. steps
-  - strategy
-  - continueOnError
-  - container
-  - services
-  - workspace
-4. extends
-
-
+lockBehavior can be defined at multiple places in your pipeline:<br />![](images/pipeline-lockbehavior.png)
 
 ---
-Stages
-- A logical boundary that can be used to mark seperation of concerns (one example being Build, QA, Production)
-- Stages are comprised of one or more Jobs (max of 256 Jobs per Stage)
-- By default, Stages run sequentially, one after the other, in the order they are defined in the yaml file.
-  - In other words, by default, each Stage has an implicit dependency on the previous Stage
-  - If you add `dependsOn` to a Stage, then you can change the order in which the Stages run
-  - If you add `dependsOn: []` to a Stage, this removes any dependencies altogether, so this Stage will run in parallel with others
-- By default, a Stage will not run if the previous Stage fails
-  - If you add a `condition` to a Stage, you can make it run even if the previous Stage fails
-  - If you add any `condition` to a Stage, then you are removing the implicit condition that the previous Stage must succeed.  So, when you use a `condition` on a Stage it is common to use `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcoum of the preceding Stage.
 
-Jobs
-- Each Job runs on one Agent
-  - Though, there are a handful of 'Agentless' Jobs as well
-- Jobs are comprised of one or more Steps
-- An Agent can only run one Job at a time
-  - To run multiple Jobs in parallel you must have multiple Agents as well as purchase sufficient Parallel Jobs
-  - If you have multiple Agents and don't want your Jobs running in parallel, then you can use `dependsOn` in your Jobs to make sure they run in the order you want them to
+# Part 2 - Defining the work done by the Pipeline
+
+## stages
+- Stages are a collection of related Jobs (max of 256 Jobs per Stage)
+- Stages run sequentially, one after the other, in the order they are defined in the YAML
+  - In effect, each Stage has an implicit dependency on the previous Stage
+  - However, if you add `dependsOn` to a Stage, then you can change the order in which the Stages run
+  - `dependsOn: []` removes any dependencies altogether, allowing a Stage to run in parallel with others
+- Stages will not run if the previous Stage fails
+  - In effect, each Stage has an implicit condition that the previous Stage must complete successfully
+  - However, if you add a `condition` to a Stage, then you could force a Stage to run, even if the previous Stage fails
+  - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  So, when you use a `condition` on a Stage it is common to use `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceeding Stage
+
+```yaml
+# defining a traditional Stage
+stages:
+- stage: string # the symoblic name used to reference this stage. must be the first property
+  displayName: string # human-readable name for the stage. optional
+  pool: pool # specify the stage-level pool where jobs in this stage will run. optional
+  dependsOn: # any stages which must complete before this one. optional
+  - string
+  condition: string # evaluate this condition expression to determine whether to run this stage
+  variables: variables # specify any stage-level variables. optional
+  lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
+  templateContext:  # stage related information passed from a pipeline when extending a template
+  jobs:
+  - job: # define a build job
+  - deployment: # define a deployment job
+  - template: # define a job template
+
+  # defining a Stage template
+  stages:
+  - template: path/to/template/file # must be the first property
+    parameters:
+      key: value
+      key: value
+  ```
+
+## jobs
+- Jobs are a collection of one or more Steps that are run by an Agent
+- Each Job runs on a single Agent (there are a handful of [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
+- Each Agent can only run one Job at a time
+- To run multiple Jobs in parallel you must have:
+  - Multiple Agents
+  - Purchase a sufficient amount of Parallel Jobs
+- If you have multiple Agents and don't want your Jobs running in parallel, then you can use `dependsOn` in each of your Jobs to make sure they run in the order you want them to
 - Jobs are configured with a default timeout of 60 minutes
   - This can be configured by adding the `timeoutInMinutes` setting to your Job
-  - Setting `timeoutInMinutes` will set the timeout to:
+  - The maximum for `timeoutInMinutes` is:
     - Forever on self-hosted Agents
-    - 360 minutes / 6 hours on Microsoft-hosted Agents for a public project and public repo
-    - 60 minutes / 1 hour on Microsoft-hosted Agents for a private project and private repo (but you can purchase more)
-- 
+    - 360 minutes (6 hours) on Microsoft-hosted Agents for a public project and public repo
+    - 60 minutes (1 hour) on Microsoft-hosted Agents for a private project and private repo (but you can purchase more)
+
+```yaml
+# defining a standard build Job
+stages:
+- stage: myFirstStage
+  jobs:
+  - job: string # the symbolic name used to reference this job. must be the first property. accepts only letters, numbers, dashes, and underscores
+    displayName: string # human-readable name for the job. optional
+    pool: pool # specify the pool where this job will run. optional
+    dependsOn: # any jobs which must complete before this one. optional
+    - string
+    condition: string # evaluate this condition expression to determine whether to run this job. optional
+    continueOnError: boolean # setting this to true means future jobs should run even if this job fails. optional, default is false
+    timeoutInMinutes: number # how long to run the job before automatically cancelling. optional, default is 60
+    cancelTimeoutInMinutes: number # how much time to give 'run always even if cancelled tasks' before killing them
+    variables: variables # specify any job-level variables. optional
+    strategy:
+      parallel: # parallel strategy
+      matrix: # matrix strategy
+      maxParallel: number # maximum number of simultaneous matrix legs to run, only valid if using matrix
+    workspace:
+      clean: string # what to clean up before the job runs. accepts only outputs, resources, or all
+    container: containerReference # container to run this job inside
+    services: { string: string | container } # container resources to run as a service container
+    uses: # Any resources (repos or pools) required by this job that are not already referenced
+      repositories: [ string ] # Repository references to Azure Git repositories
+      pools: [ string ] # Pool names, typically when using a matrix strategy for the job
+    steps:
+    - task: # define a standard task
+    - shortcut: # define a shortcut task
+    - template: # define a task template
+```
 
 Steps
 - The smallest building block of a Pipeline
