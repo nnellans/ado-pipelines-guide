@@ -236,22 +236,22 @@ variables:
 
 There are 4 ways to define `pool`:
 ```yaml
-# Option 1 - Use self-hosted agents with no demands
+# Option 1 - Use a self-hosted pool with no demands
 pool: 'privatePoolName'
 
-# Option 2 - Use self-hosted agents with a single demand
+# Option 2 - Use a self-hosted pool with a single demand
 pool:
   name: 'privatePoolName'
   demands: 'singleDemand'
 
-# Option 3 - Use self-hosted agents with multiple demands
+# Option 3 - Use a self-hosted pool with multiple demands
 pool:
   name: 'privatePoolName'
   demands:
   - 'firstDemand'
   - 'secondDemand'
 
-# Option 4 - Use Microsoft-hosted agents
+# Option 4 - Use a Microsoft-hosted pool
 pool:
   vmImage: 'ubuntu-latest'
 ```
@@ -488,15 +488,15 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
 # Part 2 - Defining the work done by the Pipeline
 
 ## stages
-- Stages are a collection of related Jobs (max of 256 Jobs per Stage)
+- Max of 256 Jobs per Stage
 - Stages run sequentially, one after the other, in the order they are defined in the YAML
-  - In effect, each Stage has an implicit dependency on the previous Stage
-  - However, if you add `dependsOn` to a Stage, then you can change the order in which the Stages run
-  - `dependsOn: []` removes any dependencies altogether, allowing a Stage to run in parallel with others
+  - Each Stage has a hidden, implicit dependency on the previous Stage
+  - By adding `dependsOn` to a Stage you can change the order in which the Stages run
+  - By adding `dependsOn: []` to a Stage you remove any dependencies altogether, allowing that Stage to run in parallel with others
 - Stages will not run if the previous Stage fails
-  - In effect, each Stage has an implicit condition that the previous Stage must complete successfully
-  - However, if you add a `condition` to a Stage, then you could force a Stage to run, even if the previous Stage fails
-  - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  So, when you use a `condition` on a Stage it is common to use `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceeding Stage
+  - Each Stage has a hidden, implicit condition that the previous Stage must complete successfully
+  - By adding a `condition` to a Stage you could force a Stage to run, even if the previous Stage fails
+  - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceeding Stage
 
 ```yaml
 # defining a traditional Stage
@@ -504,8 +504,9 @@ stages:
 - stage: string # the symoblic name used to reference this stage. must be the first property
   displayName: string # human-readable name for the stage. optional
   pool: pool # specify the stage-level pool where jobs in this stage will run. optional
-  dependsOn: # any stages which must complete before this one. optional
+  dependsOn: # first form. any stages which must complete before this one. optional
   - string
+  dependsOn: # second form. any stages which must complete before this one. optional
   condition: string # evaluate this condition expression to determine whether to run this stage
   variables: variables # specify any stage-level variables. optional
   lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
@@ -524,16 +525,14 @@ stages:
   ```
 
 ## jobs
-- Jobs are a collection of one or more Steps that are run by an Agent
 - Each Job runs on a single Agent (there are a handful of [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
-- Each Agent can only run one Job at a time
+- Each Agent can only run a single Job at a time
 - To run multiple Jobs in parallel you must have:
   - Multiple Agents
   - Purchase a sufficient amount of Parallel Jobs
-- If you have multiple Agents and don't want your Jobs running in parallel, then you can use `dependsOn` in each of your Jobs to make sure they run in the order you want them to
-- Jobs are configured with a default timeout of 60 minutes
-  - This can be configured by adding the `timeoutInMinutes` setting to your Job
-  - The maximum for `timeoutInMinutes` is:
+- If you don't want your Jobs running in parallel, then you can use `dependsOn` in each Job to create an order of operations
+- Jobs have a default `timeoutInMinutes` of 60 minutes
+  - Setting `timeoutInMinutes` to 0 means setting it to the maximum, which can be:
     - Forever on self-hosted Agents
     - 360 minutes (6 hours) on Microsoft-hosted Agents for a public project and public repo
     - 60 minutes (1 hour) on Microsoft-hosted Agents for a private project and private repo (but you can purchase more)
@@ -546,8 +545,9 @@ stages:
   - job: string # the symbolic name used to reference this job. must be the first property. accepts only letters, numbers, dashes, and underscores
     displayName: string # human-readable name for the job. optional
     pool: pool # specify the pool where this job will run. optional
-    dependsOn: # any jobs which must complete before this one. optional
+    dependsOn: # first form. any jobs which must complete before this one. optional
     - string
+    dependsOn: # second form. any jobs which must complete before this one. optional
     condition: string # evaluate this condition expression to determine whether to run this job. optional
     continueOnError: boolean # setting this to true means future jobs should run even if this job fails. optional, default is false
     timeoutInMinutes: number # how long to run the job before automatically cancelling. optional, default is 60
