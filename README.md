@@ -154,7 +154,6 @@ schedules:
 
 ## parameters (aka Runtime Parameters)
 - `parameters` are optional, and if omitted, your pipeline simply won't use any Runtime Parameters
-- Parameters are expanded early on, so only certain variables are available to use within parameters. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables)
 
 Syntax
 ```yaml
