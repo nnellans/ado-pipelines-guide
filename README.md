@@ -223,6 +223,26 @@ variables:
     param2: 'value2'
 ```
 
+Using Variables
+```yaml
+# template expression ${{ }}- processed at compile time
+# if the variable doesn't exist, then ${{ variables.varName }} resolves to an empty string
+# can be used in both YAML keys (left side) and YAML values (right side)
+${{ variables.varName }}
+
+# macro syntax $( ) - processed at runtime, right before a task runs
+# if the variable doesn't exist, then the entire $(varName) is left as-is
+# only expanded when found in certain places, including: stages, jobs, steps
+# can be used in YAML values (right side), not expanded when used in YAML keys (left side)
+$(varName)
+
+# runtime expression $[ ] - also processed at runtime, right before a task runs
+# if the variable doesn't exist, then $[ variables.varName ] resolves to an empty string
+# can be used in YAML values (right side, and must take up the entire right side), not expanded when used in YAML keys (left side)
+# meant to be used for conditions and expressions
+$[ variables.varName ]
+```
+
 ## pool
 - This lets you specify the type of Agent that will be used to run all Jobs within your pipeline
 - `pool` is optional, and if omitted, your YAML pipeline will default to using the Microsoft-hosted `ubuntu-latest`
