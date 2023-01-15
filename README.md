@@ -225,22 +225,27 @@ variables:
 
 Using Variables
 ```yaml
-# template expression ${{ }}- processed at compile time
-# if the variable doesn't exist, then ${{ variables.varName }} resolves to an empty string
+# variable template expression
+# processed at compile time
+# if the variable doesn't exist, then it resolves to an empty string
 # can be used in both YAML keys (left side) and YAML values (right side)
-${{ variables.varName }}
+${{ variables.varName }}    # index syntax
+${{ variables['varName'] }} # property deference syntax
 
-# macro syntax $( ) - processed at runtime, right before a task runs
-# if the variable doesn't exist, then the entire $(varName) is left as-is
-# only expanded when found in certain places, including: stages, jobs, steps
-# can be used in YAML values (right side), not expanded when used in YAML keys (left side)
+# variable macro syntax
+# processed at runtime, right before a task runs
+# if the variable doesn't exist, then it is not changed and will still say $(varName)
+# only expanded when found in certain places, including: stages, jobs, steps, and some others
+# can be used in YAML values (right side), but not in YAML keys (left side)
 $(varName)
 
-# runtime expression $[ ] - also processed at runtime, right before a task runs
-# if the variable doesn't exist, then $[ variables.varName ] resolves to an empty string
-# can be used in YAML values (right side, and must take up the entire right side), not expanded when used in YAML keys (left side)
+# variable runtime expression
+# also processed at runtime, right before a task runs
+# if the variable doesn't exist, then it resolves to an empty string
+# can be used in YAML values (right side, and must take up the entire right side), but not in YAML keys (left side)
 # meant to be used for conditions and expressions
-$[ variables.varName ]
+$[ variables.varName ]    # index syntax
+$[ variables['varName'] ] # property deference syntax
 ```
 
 ## pool
@@ -300,13 +305,12 @@ resources:
 These are container images
 
 ```yaml
+# define a container from Docker Registry
 resources:
   containers:
   - container: string # the symbolic name used to reference this image. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     image: string # required. examples: ubuntu:16.04, company.azurecr.io/repo:1.0.0
-    type: string # optional, defaults to Docker Registry. example: ACR
-    trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, default is none
-    endpoint: string # the Azure DevOps Service Connection used to communicate with the private registry
+    endpoint: string # the Docker Service Connection used to communicate with the private registry
     env: # variables to map into the container's environment
       string: string
     mapDockerSocket: boolean # map the /var/run/docker.sock volume on container jobs? optional, default is true
@@ -321,14 +325,34 @@ resources:
       externals: boolean # mount the externals directoy as readonly? these are components required to talk with the Agent
       tools: boolean # mount the tools directory as readonly? these are installable tools like Python and Ruby
       tasks: boolean # mount the tasks directory as readonly? these are tasks required by the job
-    # more info needed ? / ACR specific ?
-    azureSubscription: string # the Azure DevOps Service Connection used to communicate with ACR
+
+# define a container from Azure Container Registry
+resources:
+  containers:
+  - container: string # the symbolic name used to reference this image. required, must be the first property. accepts only letters, numbers, dashes, and underscores
+    type: 'ACR'
+    azureSubscription: string # the AzureRM Service Connection used to communicate with ACR
     resourceGroup: string # the Resource Group where the ACR is located
     registry: string # name of the registry in ACR
     repository: string # name of the repo in ACR
+    env: # variables to map into the container's environment
+      string: string
+    mapDockerSocket: boolean # map the /var/run/docker.sock volume on container jobs? optional, default is true
+    options: string # arguments to pass to the container at startup
+    ports: # expose ports on the Container
+    - '8080:80' # binds port 80 on the Container to port 8080 on the host Agent
+    - '6380' # binds port 6380 on the Container to a random available port on the host Agent
+    volumes: # mount volumes on the Container
+    - '/src/dir1:/dst/dir2' # mount /src/dir1 from the host Agent to /dst/dir2 on the Container
+    mountReadOnly: # which volumes should be mounted as read-only? optional, all 4 have default of false
+      work: boolean # mount the work directory as readonly?
+      externals: boolean # mount the externals directoy as readonly? these are components required to talk with the Agent
+      tools: boolean # mount the tools directory as readonly? these are installable tools like Python and Ruby
+      tasks: boolean # mount the tasks directory as readonly? these are tasks required by the job
+    trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, default is none
 ```
 - To consume a Container resource, use a Container Job, a Step Target, or a Service Container
-- `trigger` options in depth:
+- `trigger` may only work with ACR containers. `trigger` options in depth:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
