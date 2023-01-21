@@ -542,7 +542,7 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
   - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
 
 ```yaml
-# defining a traditional Stage
+# defining a Stage
 stages:
 - stage: string # the symoblic name used to reference this stage. must be the first property
   displayName: string # human-readable name for the stage. optional
