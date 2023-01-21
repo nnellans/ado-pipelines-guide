@@ -539,7 +539,7 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
 - Stages will not run if the previous Stage fails
   - Each Stage has a hidden, implicit condition that the previous Stage must complete successfully
   - By adding a `condition` to a Stage you could force a Stage to run, even if the previous Stage fails
-  - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceeding Stage
+  - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
 
 ```yaml
 # defining a traditional Stage
@@ -548,9 +548,10 @@ stages:
   displayName: string # human-readable name for the stage. optional
   pool: pool # specify the stage-level pool where jobs in this stage will run. optional
   dependsOn: # first form. any stages which must complete before this one. optional
-  - string
-  dependsOn: # second form. any stages which must complete before this one. optional
-  condition: string # evaluate this condition expression to determine whether to run this stage
+  - stageName1
+  - stageName2
+  dependsOn: stageName # second form. a stage which must complete before this one. optional
+  condition: string # evaluate this expression to determine whether to run this stage
   variables: variables # specify any stage-level variables. optional
   lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
   templateContext:  # stage related information passed from a pipeline when extending a template
