@@ -1,0 +1,184 @@
+# name of the workflow as shown in the GitHub "Actions" tab
+# optional, default is the path & name of the yaml file
+name: 'string'
+
+# name to use for each run of the workflow
+# optional, default is specific to how your workflow was triggered
+# value can include expressions, and can reference the contexts of 'github' and 'inputs'
+run-name: 'string'
+
+# defining workflow triggers
+# single event with no options
+on: push
+# multiple events with no options
+# only one event needs to occur to trigger the workflow
+# if multiple events happen at the same time, then multiple runs of the workflow will trigger
+on: [push, fork]
+on:
+  - push
+  - fork
+# events with options
+on:
+  push:
+    branches:
+    - blahblah
+  issues:
+    types:
+    - opened
+# if this workflow is used as a template
+on:
+  workflow_call:
+    # input parameters
+    inputs:
+      inputName1:
+        description:
+        required: true | false
+        type: boolean | number | string # required
+        default: # if omitted, a boolean will be false, a number will be 0, and a string will be ""
+      inputName2:
+    # input secrets
+    secrets:
+      secretName1:
+        description:
+        required: true | false
+    # output values
+    outputs:
+      outputName1:
+        description:
+        value:
+
+# if you want to modify the default permissions granted to the GITHUB_TOKEN
+# this is the workflow-level and applies to all Jobs, but can also be defined at the Job-level
+permissions:
+  actions: read | write | none
+  checks: read | write | none
+  contents: read | write | none
+  deployments: read | write | none
+  id-token: read | write | none
+  issues: read | write | none
+  discussions: read | write | none
+  packages: read | write | none
+  pages: read | write | none
+  pull-requests: read | write | none
+  repository-projects: read | write | none
+  security-events: read | write | none
+  statuses: read | write | none
+# shortcut syntax to provide read or write access for all scopes
+permissions: read-all | write-all
+# shortcut syntax to disable permissions to all scopes
+permissions: {}
+
+# define environment variables
+# this is the workflow-level and applies to all Steps in all Jobs, but can also be defined at the Job-level and Step-level too
+# most specific variable wins
+# cannot reference other variables in the same map
+env:
+  KEY: value
+  KEY: value
+# use inside the runner, just access an environment variable as usual
+#     linux:  $KEY
+#     windows powershell:  $env:KEY
+# use workflow-level environment variables outside a runner
+#     ${{ env.KEY }}
+# there are many default environment variables, most also have a matching value in the github context
+#     $GITHUB_REF and ${{ github.ref }}
+# use configuration variables defined in GitHub
+#     ${{ vars.CONFIGKEY }}
+
+
+# create a map of default settings
+# this is the workflow-level and applies to all Jobs, but can also be defined at the Job-level
+# most specific defaults wins
+defaults:
+
+concurrency:
+
+jobs:
+  symbolicJobName: # must be unique, start with a letter or underscore, and only contain letters, numbers, dashes, and underscores
+    name: 'string' # friendly name that is shown in the GitHub UI
+    env:
+    runs-on: windows-latest|ubuntu-latest|macos-latest # specifies the Agent to run on
+    needs: # specifies Job dependencies
+    if: # specifies Job conditions, to determine if the Job should run or not.  ${{ ... }} can optionally be used to enclose your condition
+    continue-on-error: true # allows the Workflow to pass if this Job fails
+    timeout-minutes: 10 # default 360, max time a Job can run before being cancelled
+    environment:
+    # run all Steps in this Job on this Container, only for Steps that don't already specify a Container
+    # 2 ways to specify a container
+    # only supported on Microsoft-hosted Ubuntu runners, or self-hosted Linux runners
+    # 'run' Steps inside a Container will default to the sh shell, overwrite with jobid.defaults.run, or step.shell
+    container: node:14.16
+    container:
+      image: node:14.16
+      credentials:
+        username:
+        password:
+      env:
+      ports:
+      volumes:
+      options:
+    # define service containers
+    services:
+      symbolicServiceName:
+        image: nginx
+        credentials:
+          username:
+          password:
+        env:
+        ports:
+        volumes:
+        options:
+    defaults:
+    concurrency:
+    strategy:
+      fail-fast:
+      max-parallel:
+      matrix:
+    permissions:
+    outputs: # specify outputs of this Job
+    
+    # list the Steps of this Job
+    steps:
+    - id: 'symbolicStepName'
+      name: 'string' # friendly name that is shown in the GitHub UI
+      env: # Step-level variables
+        KEY: value
+      if: # specifies Step conditions, to determine if the Step should run or not.  ${{ ... }} can optionally be used to enclose your condition
+      continue-on-error: true # allows the Job to pass if this Step fails
+      timeout-minutes: 10 # max time to run the Step before killing the process
+      uses: actions/checkout@v3
+      with:
+        param1: value1
+        param2: value2
+        args: 'something' # GitHub passes this to the Docker container's ENTRYPOINT.  This is used instead of the CMD instruction in your Dockerfile
+        entrypoint: 'something' # this is used instead of the ENTRYPOINT instruction in your Dockerfile
+
+    - name: something2
+      run: single-line command
+      shell: bash|pwsh|python|sh|cmd|powershell
+      working-directory: ./temp
+
+    - name: something3
+      run: |
+        multi-line
+        command
+    
+  # a Job that calls a Template
+  # only the following parameters are supported in such a Job
+  symbolicJobName:
+    name:
+    needs:
+    if:
+    permissions:
+    concurrency:
+    uses: org/repo/.github/workflows/file.yaml@ref # reference a Job template
+    with: # parameters to pass to the template, must match what is defined in the template
+      param1: value1
+      param2: value2
+    secrets: # secrets to pass to the template, must match what is defined in the template
+      param1: ${{ secrets.someSecret }}
+      param2: ${{ secretos.someOtherSecret }}
+    secrets: inherit # pass all of the secrets from the parent workflow to the template. this includes org, repo, and environment secrets from the parent workflow
+
+# official actions: https://github.com/orgs/actions/repositories
+# azure actions: https://github.com/marketplace?query=Azure&type=actions&verification=verified_creator
