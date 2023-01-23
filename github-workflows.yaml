@@ -1,23 +1,30 @@
-# name of the workflow as shown in the GitHub "Actions" tab
-# optional, default is the path & name of the yaml file
-name: 'string'
+#####################################
+## WORKFLOW INFO
+#####################################
+
+# name of the workflow as shown in the GitHub UI
+name: 'string' # optional, default is the path & name of the yaml file
 
 # name to use for each run of the workflow
-# optional, default is specific to how your workflow was triggered
 # value can include expressions, and can reference the contexts of 'github' and 'inputs'
-run-name: 'string'
+run-name: 'string' # optional, default is specific to how your workflow was triggered
 
-# defining workflow triggers
-# single event with no options
+#####################################
+## TRIGGERS:  https://docs.github.com/en/actions/using-workflows/triggering-a-workflow
+#####################################
+
+# option 1: single event with no options
 on: push
-# multiple events with no options
+
+# option 2: multiple events with no options
 # only one event needs to occur to trigger the workflow
 # if multiple events happen at the same time, then multiple runs of the workflow will trigger
 on: [push, fork]
 on:
   - push
   - fork
-# events with options
+
+# option 3: events with options
 on:
   push:
     branches:
@@ -25,30 +32,33 @@ on:
   issues:
     types:
     - opened
-# if this workflow is used as a template
+
+# option 4: if this workflow is used as a template (reusable workflow)
 on:
   workflow_call:
-    # input parameters
-    inputs:
+    inputs: # input parameters
       inputName1:
         description:
         required: true | false
         type: boolean | number | string # required
-        default: # if omitted, a boolean will be false, a number will be 0, and a string will be ""
+        default: something # if omitted, a boolean will be false, a number will be 0, and a string will be ""
       inputName2:
-    # input secrets
-    secrets:
+    secrets: # input secrets
       secretName1:
         description:
         required: true | false
-    # output values
-    outputs:
+    outputs: # output values
       outputName1:
         description:
         value:
 
+#####################################
+## GITHUB_TOKEN PERMISSIONS:  https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+#####################################
 # if you want to modify the default permissions granted to the GITHUB_TOKEN
-# this is the workflow-level and applies to all Jobs, but can also be defined at the Job-level
+# workflow-level, but can also be defined at the Job-level
+
+# option 1: full syntax
 permissions:
   actions: read | write | none
   checks: read | write | none
@@ -63,15 +73,31 @@ permissions:
   repository-projects: read | write | none
   security-events: read | write | none
   statuses: read | write | none
-# shortcut syntax to provide read or write access for all scopes
+# option 2: shortcut syntax to provide read or write access for all scopes
 permissions: read-all | write-all
-# shortcut syntax to disable permissions to all scopes
+# option 3: shortcut syntax to disable permissions to all scopes
 permissions: {}
 
-# define environment variables
-# this is the workflow-level and applies to all Steps in all Jobs, but can also be defined at the Job-level and Step-level too
-# most specific variable wins
+#####################################
+## DEFAULTS:  https://docs.github.com/en/actions/using-jobs/setting-default-values-for-jobs
+#####################################
+# create a map of default settings
+# workflow-level, but can also be defined at the Job-level. the most specific defaults wins
+
+defaults:
+
+#####################################
+## CONCURRENCY:  https://docs.github.com/en/actions/using-jobs/using-concurrency
+#####################################
+
+concurrency:
+
+#####################################
+## VARIABLES:  https://docs.github.com/en/actions/learn-github-actions/variables
+#####################################
+# workflow-level, but can also be defined at the Job-level and Step-level. the most specific variable wins
 # cannot reference other variables in the same map
+
 env:
   KEY: value
   KEY: value
@@ -82,33 +108,37 @@ env:
 #     ${{ env.KEY }}
 # there are many default environment variables, most also have a matching value in the github context
 #     $GITHUB_REF and ${{ github.ref }}
-# use configuration variables defined in GitHub
+# use configuration variables defined in GitHub UI
 #     ${{ vars.CONFIGKEY }}
+# use secrets defined in GitHub UI
+#     ${{ secrets.SECRETKEY }}
 
-
-# create a map of default settings
-# this is the workflow-level and applies to all Jobs, but can also be defined at the Job-level
-# most specific defaults wins
-defaults:
-
-concurrency:
+#####################################
+## JOBS:  https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow
+#####################################
 
 jobs:
+
+  # Option 1 - Normal Job
   symbolicJobName: # must be unique, start with a letter or underscore, and only contain letters, numbers, dashes, and underscores
     name: 'string' # friendly name that is shown in the GitHub UI
-    env:
-    runs-on: windows-latest|ubuntu-latest|macos-latest # specifies the Agent to run on
-    needs: # specifies Job dependencies
-    if: # specifies Job conditions, to determine if the Job should run or not.  ${{ ... }} can optionally be used to enclose your condition
-    continue-on-error: true # allows the Workflow to pass if this Job fails
-    timeout-minutes: 10 # default 360, max time a Job can run before being cancelled
+    runs-on: windows-latest | ubuntu-latest | macos-latest # specifies the Agent to run on
+    needs: # Job dependencies
+    if: # Job condition, ${{ ... }} can optionally be used to enclose your condition
     environment:
+    continue-on-error: true # allows the Workflow to pass if this Job fails
+    timeout-minutes: 10 # max time a Job can run before being cancelled. optional, default is 360
+    permissions: # job-level GITHUB_TOKEN permissions
+    defaults: # job-level defaults
+    concurrency: # job-level concurrency
+    env: # job-level variables
+    
+    # https://docs.github.com/en/actions/using-jobs/running-jobs-in-a-container
     # run all Steps in this Job on this Container, only for Steps that don't already specify a Container
-    # 2 ways to specify a container
     # only supported on Microsoft-hosted Ubuntu runners, or self-hosted Linux runners
     # 'run' Steps inside a Container will default to the sh shell, overwrite with jobid.defaults.run, or step.shell
-    container: node:14.16
-    container:
+    container: node:14.16 # shortcut syntax
+    container: # full syntax
       image: node:14.16
       credentials:
         username:
@@ -117,6 +147,8 @@ jobs:
       ports:
       volumes:
       options:
+    
+    # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
     # define service containers
     services:
       symbolicServiceName:
@@ -128,24 +160,26 @@ jobs:
         ports:
         volumes:
         options:
-    defaults:
-    concurrency:
+    
+    # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
     strategy:
       fail-fast:
       max-parallel:
       matrix:
-    permissions:
+    
+    # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
     outputs: # specify outputs of this Job
     
     # list the Steps of this Job
     steps:
+
+    # standard Step that uses an Action
     - id: 'symbolicStepName'
       name: 'string' # friendly name that is shown in the GitHub UI
-      env: # Step-level variables
-        KEY: value
-      if: # specifies Step conditions, to determine if the Step should run or not.  ${{ ... }} can optionally be used to enclose your condition
+      if: # Step condition, ${{ ... }} can optionally be used to enclose your condition
       continue-on-error: true # allows the Job to pass if this Step fails
       timeout-minutes: 10 # max time to run the Step before killing the process
+      env: # Step-level variables
       uses: actions/checkout@v3
       with:
         param1: value1
@@ -153,17 +187,20 @@ jobs:
         args: 'something' # GitHub passes this to the Docker container's ENTRYPOINT.  This is used instead of the CMD instruction in your Dockerfile
         entrypoint: 'something' # this is used instead of the ENTRYPOINT instruction in your Dockerfile
 
+    # Step that runs a Script
     - name: something2
       run: single-line command
       shell: bash|pwsh|python|sh|cmd|powershell
       working-directory: ./temp
 
+    # Step that runs a Script
     - name: something3
       run: |
         multi-line
         command
-    
-  # a Job that calls a Template
+
+  # https://docs.github.com/en/actions/using-workflows/reusing-workflows  
+  # Job that calls a Template
   # only the following parameters are supported in such a Job
   symbolicJobName:
     name:
@@ -180,5 +217,5 @@ jobs:
       param2: ${{ secretos.someOtherSecret }}
     secrets: inherit # pass all of the secrets from the parent workflow to the template. this includes org, repo, and environment secrets from the parent workflow
 
-# official actions: https://github.com/orgs/actions/repositories
-# azure actions: https://github.com/marketplace?query=Azure&type=actions&verification=verified_creator
+# official github actions: https://github.com/orgs/actions/repositories
+# official azure actions: https://github.com/marketplace?query=Azure&type=actions&verification=verified_creator
