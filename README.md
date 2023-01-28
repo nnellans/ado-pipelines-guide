@@ -554,9 +554,8 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
   - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
 
 ```yaml
-stages:
-
 # defining a Stage
+stages:
 - stage: string # the symoblic name used to reference this stage. must be the first property
   displayName: string # human-readable name for the stage. optional
   pool: pool # specify the stage-level pool where jobs in this stage will run. optional
@@ -569,11 +568,12 @@ stages:
   lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
   templateContext:  # stage related information passed from a pipeline when extending a template
   jobs:
-  - job: # define a build job
-  - deployment: # define a deployment job
-  - template: # define a job template
+  - job: # standard job
+  - deployment: # deployment job
+  - template: # job template
 
 # defining a Stage template
+stages:
 - template: path/to/template/file # must be the first property
   parameters:
     key: value
@@ -595,9 +595,10 @@ stages:
 - There are a handful of supported [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
 
 ```yaml
-# defining a standard Job
+# standard Job
+# will automatically do a hidden step for checkout: self, can be disabled by specifying checkout: none
 stages:
-- stage: myFirstStage
+- stage: string
   jobs:
   - job: string # the symbolic name used to reference this job. must be the first property. accepts only letters, numbers, dashes, and underscores
     displayName: string # human-readable name for the job. optional
@@ -611,10 +612,6 @@ stages:
     timeoutInMinutes: number # how long to run the job before automatically cancelling. optional, default is 60
     cancelTimeoutInMinutes: number # how much time to give 'run always even if cancelled tasks' before killing them
     variables: variables # specify any job-level variables. optional
-    strategy:
-      parallel: # parallel strategy
-      matrix: # matrix strategy
-      maxParallel: number # maximum number of simultaneous matrix legs to run, only valid if using matrix
     workspace:
       clean: string # what to clean up before the job runs. accepts only outputs, resources, or all
     container: containerReference # container to run this job inside
@@ -622,10 +619,98 @@ stages:
     uses: # Any resources (repos or pools) required by this job that are not already referenced
       repositories: [ string ] # Repository references to Azure Git repositories
       pools: [ string ] # Pool names, typically when using a matrix strategy for the job
+    templateContext:  # Deployment related information passed from a pipeline when extending a template
+    strategy:
+      parallel: # parallel strategy
+      matrix: # matrix strategy
+      maxParallel: number # maximum number of simultaneous matrix legs to run, only valid if using matrix
     steps:
-    - task: # define a standard task
-    - shortcut: # define a shortcut task
-    - template: # define a task template
+    - task: # standard task
+    - shortcut: # shortcut task
+    - template: # step template
+
+# deployment Job (runOnce strategy)
+# this strategy executes each hook just one time:  preDeploy, deploy, routeTraffic, postRouteTraffic
+# deployment Jobs do NOT automatically do a step for checkout: self, so you must specify this step if needed
+stages:
+- stage: string
+  jobs:
+  - deployment: string # the symbolic name used to reference this job. must be the first property
+    displayName: string  # human-readable name for the job. optional
+    pool: pool  # specify the pool where this job will run. optional
+    dependsOn: # first form. any jobs which must complete before this one. optional
+    - jobName1
+    - jobName2
+    dependsOn: jobName # second form. a job which must complete before this one. optional
+    condition: string  # evaluate this condition expression to determine whether to run this job. optional
+    continueOnError: string  # setting this to true means future jobs should run even if this job fails. optional, default is false
+    timeoutInMinutes: string  # how long to run the job before automatically cancelling. optional, default is 60
+    cancelTimeoutInMinutes: string  # how much time to give 'run always even if cancelled tasks' before killing them
+    variables: variables  # specify any job-level variables. optional
+    workspace:
+      clean: string # what to clean up before the job runs. accepts only outputs, resources, or all
+    container: containerReference # container to run this job inside
+    services:  { string: string | container } # container resources to run as a service container
+    uses: # Any resources (repos or pools) required by this job that are not already referenced
+      repositories: [ string ] # Repository references to Azure Git repositories
+      pools: [ string ] # Pool names, typically when using a matrix strategy for the job
+    templateContext:  # Deployment related information passed from a pipeline when extending a template
+    environment: deploymentEnvironment  # environment name to run the job against, and optionally a specific resource in the environment. example: environment-name.resource-name
+    strategy: # execution strategy for this deployment. Options: runOnce, rolling, canary
+      runOnce:
+        preDeploy: # steps that initialize resources before application deployment starts
+          pool: pool
+          steps:
+        deploy: # steps that deploy your application
+          pool: pool
+          steps:
+        routeTraffic: # steps that serve the traffic to the updated version
+          pool: pool
+          steps:
+        postRouteTraffic: # steps after the traffic is routed, typically, these tasks monitor the health of the updated version for defined interval
+          pool: pool
+          steps:
+        on:
+          failure: # runs on failure of any step
+            pool: pool
+            steps:
+          success: # runs on success of all steps
+            pool: pool
+            steps:
+
+# deployment Job (rolling strategy)
+# this only works for environments using Virtual Machines
+# the maxParallel parameter specifies how many VMs will be updated at a time
+# all hooks are executed once per batch size
+stages:
+- stage: string
+  jobs:
+  - deployment: string # the symbolic name used to reference this job. must be the first property
+    environment: string
+    strategy:
+      rolling:
+        maxParallel: 5 # can be specified in exact numbers (5) or percentages (10%)
+
+# deployment Job (canary strategy)
+# this executes preDeploy once, and then iterates through deploy, routeTraffic, and postRouteTraffic as many times as necessary
+# the increments parameters specifies how many resources to do per iteration
+stages:
+- stage: string
+  jobs:
+  - deployment: string # the symbolic name used to reference this job. must be the first property
+    environment: string
+    strategy:
+      canary:
+        increments: [10,20] # deploy to 10% and verify success, then deploy to 20% and verify success, if everything is good then deploy again to 100%
+
+# defining a Job template
+stages:
+- stage: string
+  jobs:
+  - template:  path/to/template/file # must be the first property
+    parameters:
+      key: value
+      key: value
 ```
 
 Steps
@@ -643,47 +728,9 @@ Environments
 
 By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option to run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
 
-General Info:
-- Not all Agents support running Container Jobs. This is not supported on Mac Agents, RHEL6 Agents, or Container Agents
-- This is supported by the following Microsoft-hosted Agents: `windows-2019`, `windows-2022`, and `ubuntu-*`
-- If you run self-hosted Agents, you must install Docker and make sure the local Agent has permissions to access the Docker Daemon
-- Linux Container Images must be properly configured in order to run Container Jobs (Bash, glibc-based, support running Node.js, etc.)
-- Windows Container Images:
-  - Must match the kernel version of the Windows Host Agent where it is running (for example, 2019 container image on a 2019 agent)
-  - Must be properly configured in order to run Container Jobs (install Node.js plus any dependencies)
-
-Agents
-- In order to do any work, Azure Pipelines needs at least one Agent
-- Agents are computing infrastructure with the Agent software installed
-- Agents can run one Job at a time
-- The Agent can run the Job directly, or it can run the Job inside a Container
-
-Microsoft-Hosted Agents
-- Each Job is run on a fresh virtual machine
-- Each virtual machine is discarded after every job
-- Supports both Host Jobs and Container Jobs
-
-Self-Hosted Agents
-- This is compute infrastructure that you manage, you install the Agent software, and configure the system with whatever tools are necessary
-- It is recommended to install only one copy of the Agent software per machine
-- Mac, Linux, and Windows are all supported
-- You can even run an Agent inside of a Container, only Docker is supported
-  - windowsservercore image on Windows
-  - ubuntu image on Linux
-- You can use an auto-scaled Virtual Machine Scale Set in azure to run your Agents
-  - You specify number of agents to keep on standby and the max number of VMs in the scaleset
-  - Azure DevOps takes care of auto-scaling for you
-
-
-
 ---
 
 Artifacts
-
----
-
-Conditions
-- Conditions can be used on Stages, Jobs, or Steps
 
 ---
 
@@ -701,16 +748,6 @@ Templates
   - template: file.yaml@repoName
   - You can also reference the repo where the main yaml pipeline is found with 'self':
     template: file.yaml@self
-
----
-
-`${{ Template Expressions }}`
-- Can be used to expand Parameters or Variables
-- Two formats:
-  - Index Syntax: `${{ parameters['someName']`
-  - Property Deference syntax: `${{ parameters.someName }}`
-- Expansion only happens inside Stages, Jobs, Steps, or Resources\Containers
-  - What about the new feature for Repos?
 
 ---
 
