@@ -155,7 +155,7 @@ schedules:
 ## parameters (aka Runtime Parameters)
 - `parameters` are optional, and if omitted, your pipeline simply won't use any Runtime Parameters
 
-Syntax
+Defining `parameters`
 ```yaml
 parameters:
 - name: string # the symbolic name used to reference this parameter throughout your pipeline. required, must be the first property
@@ -171,6 +171,16 @@ parameters:
   - `environment`, `filePath`, `pool`, `secureFile`, `serviceConnection`
   - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
 - A parameter cannot be optional.  This means you must provide a value when running the pipeline manually, or the parameter must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
+
+Using Parameters
+```yaml
+# Option 1 - Template Expression
+# processed once at compile time
+# if the parameter doesn't exist, then it resolves to an empty string
+# can be used in both YAML keys (left side) and YAML values (right side)
+${{ parameters.varName }}    # index syntax
+${{ parameters['varName'] }} # property deference syntax
+```
 
 ## variables
 `variables` are optional, and if omitted, your pipeline simply won't have any pipeline-level variables (they could still be defined at other levels though)
@@ -225,24 +235,25 @@ variables:
 
 Using Variables
 ```yaml
-# variable template expression
-# processed at compile time
+# Option 1 - Template Expression
+# processed once at compile time
 # if the variable doesn't exist, then it resolves to an empty string
 # can be used in both YAML keys (left side) and YAML values (right side)
 ${{ variables.varName }}    # index syntax
 ${{ variables['varName'] }} # property deference syntax
 
-# variable macro syntax
-# processed at runtime, right before a task runs
-# if the variable doesn't exist, then it is not changed and will still say $(varName)
+# Option 2 - Macro Syntax
+# processed at runtime
+# if the variable doesn't exist, then it is not changed and it will still say $(varName)
 # only expanded when found in certain places, including: stages, jobs, steps, and some others
 # can be used in YAML values (right side), but not in YAML keys (left side)
 $(varName)
 
-# variable runtime expression
+# Option 3 - Runtime Expression
 # also processed at runtime, right before a task runs
 # if the variable doesn't exist, then it resolves to an empty string
-# can be used in YAML values (right side, and must take up the entire right side), but not in YAML keys (left side)
+# can be used in YAML values (right side), but not in YAML keys (left side)
+# must take up the entire right side of the YAML value
 # meant to be used for conditions and expressions
 $[ variables.varName ]    # index syntax
 $[ variables['varName'] ] # property deference syntax
