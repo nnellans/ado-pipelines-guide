@@ -243,14 +243,14 @@ ${{ variables.varName }}    # index syntax
 ${{ variables['varName'] }} # property deference syntax
 
 # Option 2 - Macro Syntax
-# processed at runtime
+# processed at runtime, right before a task runs
 # if the variable doesn't exist, then it is not changed and it will still say $(varName)
 # only expanded when found in certain places, including: stages, jobs, steps, and some others
 # can be used in YAML values (right side), but not in YAML keys (left side)
 $(varName)
 
 # Option 3 - Runtime Expression
-# also processed at runtime, right before a task runs
+# processed at runtime
 # if the variable doesn't exist, then it resolves to an empty string
 # can be used in YAML values (right side), but not in YAML keys (left side)
 # must take up the entire right side of the YAML value
@@ -363,7 +363,8 @@ resources:
     trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, default is none
 ```
 - To consume a Container resource, use a Container Job, a Step Target, or a Service Container
-- `trigger` may only work with ACR containers. `trigger` options in depth:
+- `trigger` might only work with ACR containers, the documentation is not crystal clear on this
+- `trigger` options in depth:
   ```yaml
   # option 1 - Disable
   trigger: 'none'
@@ -418,9 +419,9 @@ resources:
     - string
 ```
 - Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are automatically downloaded by 'deploy' jobs.  To consume Pipeline resources in 'regular' Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step or a [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
-- When an update to the Pipeline Resource causes the parent Pipeline to trigger:
-  - If the Pipeline Resource and the parent Pipeline are from the same repository, and the Pipeline Resource triggers because of an update to Branch A, then the parent Pipeline will be run using that same Branch A.
-  - If the Pipeline Resource and the parent Pipeline are from different repositories, then the parent Pipeline will always run using its own default Branch, it doesn't matter which branch the Pipeline Resource was updated on
+- When an update to the Pipeline `resource` causes the parent Pipeline to trigger:
+  - If the Pipeline `resource` and the parent Pipeline are from the same repository, and the Pipeline `resource` triggers because of an update to Branch A, then the parent Pipeline will be run using that same Branch A.
+  - If the Pipeline `resource` and the parent Pipeline are from different repositories, then the parent Pipeline will always run using its own default Branch, it doesn't matter which branch the Pipeline `resource` was updated on
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -474,7 +475,7 @@ resources:
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
   - For any other allowed `type`
     - Set `name: orgName/someRepo` or `name: userName/someRepo`
-- To reiterate, Repository Triggers are ONLY supported for Azure Repos Git
+- Repository Triggers are ONLY supported for Azure Repos Git
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -571,13 +572,13 @@ stages:
   - deployment: # define a deployment job
   - template: # define a job template
 
-  # defining a Stage template
-  stages:
-  - template: path/to/template/file # must be the first property
-    parameters:
-      key: value
-      key: value
-  ```
+# defining a Stage template
+stages:
+- template: path/to/template/file # must be the first property
+  parameters:
+    key: value
+    key: value
+```
 
 ## jobs
 - Each Job runs on a single Agent (there are a handful of [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
