@@ -554,8 +554,9 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
   - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
 
 ```yaml
-# defining a Stage
 stages:
+
+# defining a Stage
 - stage: string # the symoblic name used to reference this stage. must be the first property
   displayName: string # human-readable name for the stage. optional
   pool: pool # specify the stage-level pool where jobs in this stage will run. optional
@@ -573,7 +574,6 @@ stages:
   - template: # define a job template
 
 # defining a Stage template
-stages:
 - template: path/to/template/file # must be the first property
   parameters:
     key: value
@@ -581,20 +581,21 @@ stages:
 ```
 
 ## jobs
-- Each Job runs on a single Agent (there are a handful of [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
-- Each Agent can only run a single Job at a time
-- To run multiple Jobs in parallel you must have:
+- Each Job is run by a single Agent
+- Each Agent can only run one Job at a time
+- Job run in parallel by default.  But, to run multiple Jobs in parallel you must have:
   - Multiple Agents
-  - Purchase a sufficient amount of Parallel Jobs
-- If you don't want your Jobs running in parallel, then you can use `dependsOn` in each Job to create an order of operations
+  - Purchased a sufficient amount of Parallel Jobs
+- If you don't want your Jobs running in parallel, then you can use `dependsOn` in each Job to create your own order of operations
 - Jobs have a default `timeoutInMinutes` of 60 minutes
   - Setting `timeoutInMinutes` to 0 means setting it to the maximum, which can be:
     - Forever on self-hosted Agents
     - 360 minutes (6 hours) on Microsoft-hosted Agents for a public project and public repo
     - 60 minutes (1 hour) on Microsoft-hosted Agents for a private project and private repo (but you can purchase more)
+- There are a handful of supported [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
 
 ```yaml
-# defining a standard build Job
+# defining a standard Job
 stages:
 - stage: myFirstStage
   jobs:
@@ -602,8 +603,9 @@ stages:
     displayName: string # human-readable name for the job. optional
     pool: pool # specify the pool where this job will run. optional
     dependsOn: # first form. any jobs which must complete before this one. optional
-    - string
-    dependsOn: # second form. any jobs which must complete before this one. optional
+    - jobName1
+    - jobName2
+    dependsOn: jobName # second form. a job which must complete before this one. optional
     condition: string # evaluate this condition expression to determine whether to run this job. optional
     continueOnError: boolean # setting this to true means future jobs should run even if this job fails. optional, default is false
     timeoutInMinutes: number # how long to run the job before automatically cancelling. optional, default is 60
