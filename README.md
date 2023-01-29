@@ -56,7 +56,7 @@ appendCommitMessageToRunName: boolean # is the latest Git commit message appende
 - You cannot use variables in `triggers`, as variables are evaluated after triggers are evaluated
 - `triggers` are not supported inside template files
 
-There are 3 ways to define `triggers`:
+There are 3 ways to define `trigger`:
 ```yaml
 # Option 1 - Disable CI Triggers
 trigger: 'none'
@@ -190,7 +190,7 @@ General info:
 - Variable names must not begin with these words (regardless of capitalization): `endpoint`, `input`, `path`, `secret`, `securefile`
 - Variables don't have a type, all variables are stored as strings
 - Variables are mutable, the value can change from run to run, or from job to job (but you can override this with the `readonly` option)
-- Azure DevOps uses many default system variables, and they all have predefined values that are read-only. More [here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
+- Azure DevOps uses many default system variables, and they all have predefined, read-only values. [More info here](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
 
 Variables can be defined at multiple places throughout your pipeline:<br />
 ![](images/pipeline-variables.png)
@@ -202,12 +202,12 @@ Variables can be defined at multiple places throughout your pipeline:<br />
     - YAML job-level
 
 Both User-defined variables and System variables are automatically converted to environment variables inside the pipeline Agent:
-- OS-specific environment variable naming standards:
+- You must use your OS-specific syntax:
   - Mac and Linux: `$NAME`
   - Windows Batch: `%NAME%`
   - Windows PowerShell: `$env:NAME`
 - When pipeline variables are converted to environment variables:
-  - Variable names are converted to uppercase
+  - Variable names are converted to all uppercase
   - Any periods in the name are converted to underscores
 
 There are 2 ways to define `variables`:
@@ -310,7 +310,7 @@ resources:
     trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? optional, default is none. accepts only none or true
 ```
 - Triggers are only supported for hosted Jenkins, where Azure DevOps has line of sight with Jenkins server
-- Build resources are not automatically downloaded by Jobs.  To consume Builds use a [downloadBuild](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download-build) Step or a [DownloadBuildArtifacts](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-build-artifacts-v1) Task
+- Build resources are not automatically downloaded by Jobs.  To consume Builds use a [downloadBuild](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download-build) Step / [DownloadBuildArtifacts](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-build-artifacts-v1) Task
 
 ### <ins>Resources: containers</ins>
 These are container images
@@ -363,7 +363,7 @@ resources:
     trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, default is none
 ```
 - To consume a Container resource, use a Container Job, a Step Target, or a Service Container
-- `trigger` only works for ACR containers
+- Container `trigger` is ONLY supported for ACR
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -400,7 +400,7 @@ resources:
     tag: string
     trigger: string # if the package is updated, will it trigger this pipeline? optional, default is none. accepts only none or true
 ```
-- Package resources are not automatically downloaded by Jobs.  To consume Packages use a [getPackage](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-get-package) Step or a [DownloadPackage](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-package-v1) Task
+- Package resources are not automatically downloaded by Jobs.  To consume Packages use a [getPackage](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-get-package) Step / [DownloadPackage](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-package-v1) Task
 
 ### <ins>Resources: pipelines</ins>
 These are other Azure DevOps YAML Pipelines
@@ -411,14 +411,14 @@ resources:
   - pipeline: string # the symbolic name used to reference this other pipeline. required, must be the first property. accepts only letters, numbers, dashes, and underscores
     project: string # the azure devops project where this other pipeline is located. optional, default is the current azure devops project
     source: string # the name of this other pipeline
-    trigger: # if the other pipeline is ran successfully, will it trigger this pipeline? see more below. optional, default is none
-    # the next 3 options are used
-    version: string # the run name from this other pipeline. optional, default is the latest successful run across all stages. this is used as a default for manual or scheduled triggers
-    branch: string # branch to pick the artifact. optional, defaults to all branches. this is used as a default for manual or scheduled triggers
-    tags: # List of tags required on the other pipeline. optional. this is used as a default for manual or scheduled triggers
+    trigger: # if the referenced pipeline is ran successfully, will it trigger the parent pipeline? see more below. optional, default is none
+    # the next 3 options are used as defaults for manual or scheduled triggers of the parent pipeline
+    version: string # the run name from this other pipeline. optional, default is the latest successful run across all stages
+    branch: string # branch to pick the artifact. optional, defaults to all branches
+    tags: # List of tags required on the other pipeline. optional
     - string
 ```
-- Pipeline resources are not automatically downloaded by 'regular' Jobs, but they are automatically downloaded by 'deploy' jobs.  To consume Pipeline resources in 'regular' Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step or a [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
+- Pipeline resources are not automatically downloaded by Traditional Jobs, but they are automatically downloaded by Deployment Jobs.  To consume Pipeline resources in Traditional Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step / [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
 - When an update to the Pipeline `resource` causes the parent Pipeline to trigger:
   - If the Pipeline `resource` and the parent Pipeline are from the same repository, and the Pipeline `resource` triggers because of an update to Branch A, then the parent Pipeline will be run using that same Branch A.
   - If the Pipeline `resource` and the parent Pipeline are from different repositories, then the parent Pipeline will always run using its own default Branch, it doesn't matter which branch the Pipeline `resource` was updated on
@@ -427,7 +427,7 @@ resources:
   # option 1 - Disable
   trigger: 'none'
 
-  # option 2 - Trigger on a successful run from all branches (shortcut syntax)
+  # option 2 - Trigger on a successful run from all branches
   trigger: 'true'
 
   # option 3 - Trigger on a successful run from a specific list of branches (simplified syntax)
@@ -465,9 +465,9 @@ resources:
     name: string  # the repository name, what you put here depends on the value of type. see more below
     ref: string  # the ref to checkout (branch, tag, etc.). optional, default is refs/heads/main
     endpoint: string  # the Azure DevOps Service Connection used to communicate with the repo
-    trigger:  # if the repository is updated, will it trigger this pipeline? only supported for Azure Repos Git. see more below. optional, the default is none
+    trigger:  # if the repository is updated, will it trigger this pipeline? supported only for Azure Repos Git. see more below. optional, the default is none
 ```
-- Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a `checkout` Task in your Job.
+- Repository resources are not automatically downloaded by the pipeline.  So, in order for your Job to use them, you must first include a [checkout](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines) Step in your Job
 - For Azure Repos Git use `type: git`
 - What you pick for `type` dictates what you should put for `name`
   - For `type: git` (Azure Repos Git)
@@ -475,7 +475,7 @@ resources:
     - If the repo exists in a different DevOps Project, then set `name: someProject/someRepo`
   - For any other allowed `type`
     - Set `name: orgName/someRepo` or `name: userName/someRepo`
-- Repository Triggers are ONLY supported for Azure Repos Git
+- Repository `trigger` is ONLY supported for Azure Repos Git
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -549,7 +549,7 @@ A Pipeline contains one or more Stages.  Each Stage contains one or more Jobs.  
   - This is because each Stage has a hidden, implicit dependency on the previous Stage
   - If you don't want your Stages running sequentially, then you can use `dependsOn` in each Stage to create your own order of operations
   - By adding `dependsOn: []` to a Stage you remove any dependencies altogether, allowing that Stage to run in parallel with others
-- Stages will not run if the previous Stage fails
+- Stages will not run if the previous Stage fails, by default
   - Each Stage has a hidden, implicit condition that the previous Stage must complete successfully
   - By adding a `condition` to a Stage you could force a Stage to run, even if the previous Stage fails
   - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
@@ -591,18 +591,20 @@ stages:
   - Forever on self-hosted Agents
   - 360 minutes on Microsoft-hosted Agents for a public project and public repo
   - 60 minutes on Microsoft-hosted Agents for a private project and private repo
-- There are a handful of supported [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
+- There are a handful of supported [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks)
 - Jobs come in 2 different forms: traditional Jobs and deployment Jobs
-  - Traditional Jobs support the optional Matrix and Parallel strategies
+  - Traditional Jobs:
+    - Support the optional `matrix` and `parallel` strategies
+    - Have a hidden Step for `checkout: self`. This behavior can be disabled by specifying a Step for `checkout: none`
   - Deployment Jobs:
-    - Provide a deployment history
     - Deploy to an Azure DevOps `environment`
-    - Support the RunOnce, Rolling, and Canary strategies
+    - Provide a deployment history
+    - Support the `runOnce`, `rolling`, and `canary` strategies
+    - Do NOT have a hidden Step for `checkout: self`, so you must specify this Step if needed
   - Both types of Jobs can exist in the same Stage
 
 ```yaml
 # defining a Traditional Job
-# will automatically do a hidden step for checkout: self, can be disabled by specifying checkout: none
 stages:
 - stage: string
   jobs:
@@ -621,10 +623,10 @@ stages:
     workspace:
       clean: string # what to clean up before the job runs. accepts only outputs, resources, or all
     container: containerReference # container to run this job inside
-    services: { string: string | container } # container resources to run as a service container
-    uses: # Any resources (repos or pools) required by this job that are not already referenced
-      repositories: [ string ] # Repository references to Azure Git repositories
-      pools: [ string ] # Pool names, typically when using a matrix strategy for the job
+    services: containerReference # service container(s) to use
+    uses: # any resources (repos or pools) required by this job that are not already referenced
+      repositories: # Repository references to Azure Git repositories
+      pools: # Pool names, typically when using a matrix strategy for the job
     templateContext:  # additional Job-related info you can pass into an extended template
     # option 1 - parallel strategy (aka slicing): duplicate a job and run the copies in parallel. the tasks in the should understand they are being run in parallel
     strategy: # optional
@@ -638,14 +640,13 @@ stages:
         secondConfig:
           key: value
           key: value
-      maxParallel: number # maximum number of matrix jobs that can run in parallel. setting to 0 means no limit. optional, default is no limit
+      maxParallel: number # maximum number of matrix jobs that can run in parallel. default is 0 (meaning no limit)
     steps:
     - task: # standard task
-    - shortcut: # shortcut task
+    - shortcut: # task shortcut, examples: pwsh, script, publish, etc.
     - template: # step template
 
 # defining a Deployment Job (runOnce strategy)
-# deployment Jobs do NOT automatically do a step for checkout: self, so you must specify this step if needed
 stages:
 - stage: string
   jobs:
@@ -664,7 +665,7 @@ stages:
     workspace:
       clean: string # what to clean up before the job runs. accepts only outputs, resources, or all
     container: containerReference # container to run this job inside
-    services:  { string: string | container } # container resources to run as a service container
+    services: containerReference # service container(s) to use
     uses: # Any resources (repos or pools) required by this job that are not already referenced
       repositories: [ string ] # Repository references to Azure Git repositories
       pools: [ string ] # Pool names, typically when using a matrix strategy for the job
@@ -673,23 +674,23 @@ stages:
     strategy: # execution strategy for this deployment. Options: runOnce, rolling, canary
       runOnce:
         preDeploy: # steps that initialize resources before application deployment starts. executed once
-          pool: pool
+          pool:
           steps:
         deploy: # steps that deploy your application. executed once
-          pool: pool
+          pool:
           steps:
         routeTraffic: # steps that serve the traffic to the updated version. executed once
-          pool: pool
+          pool:
           steps:
         postRouteTraffic: # steps after the traffic is routed, typically, these tasks monitor the health of the updated version for defined interval. executed once
-          pool: pool
+          pool:
           steps:
         on:
           failure: # runs on failure of any step
-            pool: pool
+            pool:
             steps:
           success: # runs on success of all steps
-            pool: pool
+            pool:
             steps:
 
 # defining a Deployment Job (rolling strategy)
@@ -784,7 +785,7 @@ stages:
         KEY: value
       target: # accepts either 'host' or the name of a container resource. optional
 
-# defining a shortcut
+# defining a task shortcut
 stages:
 - stage: string
   jobs:
@@ -819,38 +820,8 @@ stages:
 
 ---
 
-Environments
-
----
-
-By default, each Job runs directly on an Agent machine (aka Host Jobs). But, you also have the option to run Jobs inside of a Container on the Agent machine (aka Container Jobs).  Even an individual Step can be run inside a Container<br />![](images/container-jobs.png)
-
----
-
-Artifacts
-
----
-
-Templates
-- Templates must exist on your filesystem at the start of a pipeline run
-- You can't reference Templates in an artifact
-- 1. Steps
-- 2. Jobs
-  - When templating Jobs, remember to remove the name of the Job inside your Template file, this will avoid any naming conflicts
-- 3. Stages
-- 4. Variables
-- When referencing a Template, the path to use for the Template should be relative to the main yaml pipeline
-- You can reference a Template that is in another repo than the main yaml pipeline
-  - You must define the other repo in the 'resources' section in your main yaml pipeline
-  - template: file.yaml@repoName
-  - You can also reference the repo where the main yaml pipeline is found with 'self':
-    template: file.yaml@self
-
----
-
-Sources
-- https://learn.microsoft.com/en-us/azure/devops/pipelines/process/stages
-- https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases
-- https://learn.microsoft.com/en-us/azure/devops/pipelines/process/templates
-- https://learn.microsoft.com/en-us/azure/devops/pipelines/process/expressions
-- https://learn.microsoft.com/en-us/azure/devops/pipelines/process/conditions
+# Part 3 - More topics to come
+- Templates, Extends, TemplateContext
+- Environments
+- Container Jobs, Service Containers, Step Targets
+- Pipeline Artifacts
