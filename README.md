@@ -293,7 +293,7 @@ pool:
 - [List](https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted) of Microsoft-hosted agents
 
 ## resources
-You can define builds, containers, packages, pipelines, repositories, and webhooks.  Each one of these resources can be consumed by your Pipeline, or used to trigger your Pipeline
+You can define builds, containers, packages, pipelines, repositories, and webhooks.  Each one of these resources can be consumed by your Pipeline, or used to trigger your Pipeline<br />![](images/pipeline-resources.png)
 
 ### <ins>Resources: builds</ins>
 These are artifacts produced by an external CI system
@@ -363,7 +363,7 @@ resources:
     trigger: # if the container image is updated, will it trigger this pipeline? see more below. optional, default is none
 ```
 - To consume a Container resource, use a Container Job, a Step Target, or a Service Container
-- `trigger` might only work with ACR containers, the documentation is not crystal clear on this
+- `trigger` only works for ACR containers
 - `trigger` options in depth:
   ```yaml
   # option 1 - Disable
@@ -541,6 +541,7 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
 ---
 
 # Part 2 - Defining the work done by the Pipeline
+A Pipeline contains one or more Stages.  Each Stage contains one or more Jobs.  Each Job contains one or more Steps.  There are shortcut syntaxes available if you have just one Stage, or if you have a single Stage and a single Job.<br />![](images/pipeline-stages.png)
 
 ## stages
 - Max of 256 Jobs per Stage
@@ -566,7 +567,7 @@ stages:
   condition: string # evaluate this expression to determine whether to run this stage
   variables: variables # specify any stage-level variables. optional
   lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
-  templateContext:  # stage related information passed from a pipeline when extending a template
+  templateContext:  # additional Stage-related info you can pass into an extended template
   jobs:
   - job: # standard job
   - deployment: # deployment job
@@ -597,6 +598,7 @@ stages:
     - Provide a deployment history
     - Deploy to an Azure DevOps `environment`
     - Support the RunOnce, Rolling, and Canary strategies
+  - Both types of Jobs can exist in the same Stage
 
 ```yaml
 # defining a Traditional Job
@@ -623,7 +625,7 @@ stages:
     uses: # Any resources (repos or pools) required by this job that are not already referenced
       repositories: [ string ] # Repository references to Azure Git repositories
       pools: [ string ] # Pool names, typically when using a matrix strategy for the job
-    templateContext:  # Deployment related information passed from a pipeline when extending a template
+    templateContext:  # additional Job-related info you can pass into an extended template
     # option 1 - parallel strategy (aka slicing): duplicate a job and run the copies in parallel. the tasks in the should understand they are being run in parallel
     strategy: # optional
       parallel: number # run the job this many times
@@ -666,7 +668,7 @@ stages:
     uses: # Any resources (repos or pools) required by this job that are not already referenced
       repositories: [ string ] # Repository references to Azure Git repositories
       pools: [ string ] # Pool names, typically when using a matrix strategy for the job
-    templateContext:  # Deployment related information passed from a pipeline when extending a template
+    templateContext:  # additional Deployment-related info you can pass into an extended template
     environment: deploymentEnvironment  # environment name to run the job against, and optionally a specific resource in the environment. example: environment-name.resource-name
     strategy: # execution strategy for this deployment. Options: runOnce, rolling, canary
       runOnce:
@@ -692,7 +694,6 @@ stages:
 
 # defining a Deployment Job (rolling strategy)
 # this only works for environments using Virtual Machines
-# the maxParallel parameter specifies how many VMs will be updated at a time
 stages:
 - stage: string
   jobs:
@@ -700,7 +701,7 @@ stages:
     environment: string
     strategy:
       rolling:
-        maxParallel: 5 # can be specified in exact numbers (5) or percentages (10%)
+        maxParallel: 5 # how many VMs will be updated at a time. can be specified in exact numbers (5) or percentages (10%)
         preDeploy: # executed once per batch size
         deploy: # executed once per batch size
         routeTraffic: # executed once per batch size
@@ -710,7 +711,7 @@ stages:
           success:
 
 # defining a Deployment Job (canary strategy)
-# the increments parameters specifies how many resources to do per iteration
+# the increments parameters specifies how many resources to update per iteration
 stages:
 - stage: string
   jobs:
