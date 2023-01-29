@@ -227,10 +227,10 @@ variables:
 # specify a variable group
 - group: 'varGroupName'
 # specify a variable template
-- template: 'templateFile'
-  parameters:
-    param1: 'value1'
-    param2: 'value2'
+- template: path/to/template/file # must be the first property
+  parameters: # optional parameters to pass into the template
+    key: value
+    key: value
 ```
 
 Using Variables
@@ -575,7 +575,7 @@ stages:
 # defining a Stage template
 stages:
 - template: path/to/template/file # must be the first property
-  parameters:
+  parameters: # optional parameters to pass into the template
     key: value
     key: value
 ```
@@ -597,8 +597,9 @@ stages:
     - Provide a deployment history
     - Deploy to an Azure DevOps `environment`
     - Support the RunOnce, Rolling, and Canary strategies
+
 ```yaml
-# traditional Job
+# defining a Traditional Job
 # will automatically do a hidden step for checkout: self, can be disabled by specifying checkout: none
 stages:
 - stage: string
@@ -641,7 +642,7 @@ stages:
     - shortcut: # shortcut task
     - template: # step template
 
-# deployment Job (runOnce strategy)
+# defining a Deployment Job (runOnce strategy)
 # deployment Jobs do NOT automatically do a step for checkout: self, so you must specify this step if needed
 stages:
 - stage: string
@@ -689,7 +690,7 @@ stages:
             pool: pool
             steps:
 
-# deployment Job (rolling strategy)
+# defining a Deployment Job (rolling strategy)
 # this only works for environments using Virtual Machines
 # the maxParallel parameter specifies how many VMs will be updated at a time
 stages:
@@ -708,7 +709,7 @@ stages:
           failure:
           success:
 
-# deployment Job (canary strategy)
+# defining a Deployment Job (canary strategy)
 # the increments parameters specifies how many resources to do per iteration
 stages:
 - stage: string
@@ -730,18 +731,90 @@ stages:
 stages:
 - stage: string
   jobs:
-  - template:  path/to/template/file # must be the first property
-    parameters:
+  - template: path/to/template/file # must be the first property
+    parameters: # optional parameters to pass into the template
       key: value
       key: value
 ```
 
 ## steps
-- The smallest building block of a Pipeline
-- Steps can run a Task
-  - Tasks are pre-packaged scripts or procedures to do something (install Java, run a Gradle build, etc.)
-  - Tasks abstract away a lot of the underlying complexity, and all you have to do is just provide a set of inputs to the Task
-- Steps can also just run your own custom Script (command line, PowerShell, or Bash)
+- Steps run sequentially, and there is no way to change this
+- Steps are used to run Tasks:
+  - There are many [built-in Tasks](https://github.com/microsoft/azure-pipelines-tasks/tree/master/Tasks)
+  - There are also many Tasks you can install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/azuredevops)
+  - You can also write and use your own custom Tasks
+- There are a handful of Tasks that can also be referenced by shortcut syntaxes, such as:
+  - `script` is a shortcut for the CmdLine Task
+  - `powershell` is a shortcut for the PowerShell Task (with the option `pwsh: false`)
+  - `pwsh` is a shortcut for the PowerShell Task (with the option `pwsh: true`)
+  - `bash` is a shortcut for the ShellScript Task
+  - `download` is a shortcut for the DownloadPipelineArtifact Task
+  - `downloadBuild` is a shortcut for the DownloadBuildArtifacts Task
+  - `getPackage` is a shortcut for the DownloadPackage Task
+  - `publish` is a shortcut for the PublishPipelineArtifact Task
+  - `restoreCache` is a shortcut for the Cache Task
+  - `saveCache` is a shortcut for the Cache Task
+  - `reviewApp` is a shortcut for the ReviewApp Task
+- One oddball is the `checkout` shortcut, which actually doesn't have a backend Task associated with it
+- Each Step runs in its own process on the Agent that is running the Job, this means:
+  - Variables are NOT preserved between Steps in the same Job
+  - File System changes are preserved between Steps in the same Job
+
+```yaml
+# defining a Task
+stages:
+- stage: string
+  jobs:
+  - job: string
+    steps:
+    - task: string # task name and version, example: VSBuild@1. must be the first property
+      inputs: # specific to the chosen task
+        key: value
+        key: value
+      name: string # the symbolic name used to reference this step. accepts only letters, numbers, and underscores. optional
+      displayName: string # human-readable name for this step. optional
+      enabled: boolean # run this step? optional, default is true
+      condition: string # evaluate this condition expression to determine whether to run this step. optional
+      continueOnError: boolean # setting this to true means future steps should run even if this step fails. optional, default is false
+      retryCountOnTaskFailure: number # max number of retries if the task fails. optional, default is 0
+      timeoutInMinutes: string # time to wait for this task to complete before the server kills it. optional
+      env:  # environment variables to map into the process's environment. optional
+        KEY: value
+        KEY: value
+      target: # accepts either 'host' or the name of a container resource. optional
+
+# defining a shortcut
+stages:
+- stage: string
+  jobs:
+  - job: string
+    steps:
+    - shortcutName: string # specific to the chosen shortcut. example: pwsh. must be the first property
+      key: value # specific to the chosen shortcut
+      key: value # specific to the chosen shortcut
+      name: string # the symbolic name used to reference this step. accepts only letters, numbers, and underscores. optional
+      displayName: string # human-readable name for this step. optional
+      enabled: boolean # run this step? optional, default is true
+      condition: string # evaluate this condition expression to determine whether to run this step. optional
+      continueOnError: boolean # setting this to true means future steps should run even if this step fails. optional, default is false
+      retryCountOnTaskFailure: number # max number of retries if the task fails. optional, default is 0
+      timeoutInMinutes: string # time to wait for this task to complete before the server kills it. optional
+      env:  # environment variables to map into the process's environment. optional
+        KEY: value
+        KEY: value
+      target: # accepts either 'host' or the name of a container resource. optional
+
+# defining a step template
+stages:
+- stage: string
+  jobs:
+  - job: string
+    steps:
+    - template: path/to/template/file # must be the first property
+      parameters: # optional parameters to pass into the template
+        key: value
+        key: value
+```
 
 ---
 
