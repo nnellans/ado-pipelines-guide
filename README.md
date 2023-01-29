@@ -27,9 +27,9 @@ Azure DevOps has two different types of Pipelines.  First, there is the "*Classi
 - [lockBehavior](#lockbehavior)
 
 **Part 2 - Defining the work done by the Pipeline**:
-- stages
-- jobs
-- steps
+- [stages](#stages)
+- [jobs](#jobs)
+- [steps](#steps)
 
 ---
 
@@ -544,9 +544,9 @@ lockBehavior can be defined at multiple places in your pipeline:<br />![](images
 
 ## stages
 - Max of 256 Jobs per Stage
-- Stages run sequentially, one after the other, in the order they are defined in the YAML
-  - Each Stage has a hidden, implicit dependency on the previous Stage
-  - By adding `dependsOn` to a Stage you can change the order in which the Stages run
+- Stages run sequentially in the order they are defined in the YAML, by default
+  - This is because each Stage has a hidden, implicit dependency on the previous Stage
+  - If you don't want your Stages running sequentially, then you can use `dependsOn` in each Stage to create your own order of operations
   - By adding `dependsOn: []` to a Stage you remove any dependencies altogether, allowing that Stage to run in parallel with others
 - Stages will not run if the previous Stage fails
   - Each Stage has a hidden, implicit condition that the previous Stage must complete successfully
@@ -581,21 +581,24 @@ stages:
 ```
 
 ## jobs
-- Each Job is run by a single Agent
-- Each Agent can only run one Job at a time
-- Job run in parallel by default.  But, to run multiple Jobs in parallel you must have:
-  - Multiple Agents
-  - Purchased a sufficient amount of Parallel Jobs
-- If you don't want your Jobs running in parallel, then you can use `dependsOn` in each Job to create your own order of operations
-- Jobs have a default `timeoutInMinutes` of 60 minutes
-  - Setting `timeoutInMinutes` to 0 means setting it to the maximum, which can be:
-    - Forever on self-hosted Agents
-    - 360 minutes (6 hours) on Microsoft-hosted Agents for a public project and public repo
-    - 60 minutes (1 hour) on Microsoft-hosted Agents for a private project and private repo (but you can purchase more)
+- Each Job is run by a single Agent, and each Agent can only run one Job at a time
+- Jobs run in parallel, by default. However, to run multiple Jobs in parallel you must have:
+  - One, a sufficient amount of available Agents
+  - Two, a sufficient amount of Parallel Job licenses
+  - If you don't want your Jobs running in parallel, then you can use `dependsOn` in each Job to create your own order of operations
+- Setting `timeoutInMinutes` to 0 means setting it to the maximum, which can be:
+  - Forever on self-hosted Agents
+  - 360 minutes on Microsoft-hosted Agents for a public project and public repo
+  - 60 minutes on Microsoft-hosted Agents for a private project and private repo
 - There are a handful of supported [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks))
-
+- Jobs come in 2 different forms: traditional Jobs and deployment Jobs
+  - Traditional Jobs support the optional Matrix and Parallel strategies
+  - Deployment Jobs:
+    - Provide a deployment history
+    - Deploy to an Azure DevOps `environment`
+    - Support the RunOnce, Rolling, and Canary strategies
 ```yaml
-# standard Job
+# traditional Job
 # will automatically do a hidden step for checkout: self, can be disabled by specifying checkout: none
 stages:
 - stage: string
@@ -620,17 +623,25 @@ stages:
       repositories: [ string ] # Repository references to Azure Git repositories
       pools: [ string ] # Pool names, typically when using a matrix strategy for the job
     templateContext:  # Deployment related information passed from a pipeline when extending a template
-    strategy:
-      parallel: # parallel strategy
-      matrix: # matrix strategy
-      maxParallel: number # maximum number of simultaneous matrix legs to run, only valid if using matrix
+    # option 1 - parallel strategy (aka slicing): duplicate a job and run the copies in parallel. the tasks in the should understand they are being run in parallel
+    strategy: # optional
+      parallel: number # run the job this many times
+    # option 2 - matrix strategy: run the same job multiple times in parallel using different variable sets
+    strategy: # optional
+      matrix:
+        firstConfig: # accepts only letters, numbers, and underscores. must start with a letter
+          key: value
+          key: value
+        secondConfig:
+          key: value
+          key: value
+      maxParallel: number # maximum number of matrix jobs that can run in parallel. setting to 0 means no limit. optional, default is no limit
     steps:
     - task: # standard task
     - shortcut: # shortcut task
     - template: # step template
 
 # deployment Job (runOnce strategy)
-# this strategy executes each hook just one time:  preDeploy, deploy, routeTraffic, postRouteTraffic
 # deployment Jobs do NOT automatically do a step for checkout: self, so you must specify this step if needed
 stages:
 - stage: string
@@ -658,16 +669,16 @@ stages:
     environment: deploymentEnvironment  # environment name to run the job against, and optionally a specific resource in the environment. example: environment-name.resource-name
     strategy: # execution strategy for this deployment. Options: runOnce, rolling, canary
       runOnce:
-        preDeploy: # steps that initialize resources before application deployment starts
+        preDeploy: # steps that initialize resources before application deployment starts. executed once
           pool: pool
           steps:
-        deploy: # steps that deploy your application
+        deploy: # steps that deploy your application. executed once
           pool: pool
           steps:
-        routeTraffic: # steps that serve the traffic to the updated version
+        routeTraffic: # steps that serve the traffic to the updated version. executed once
           pool: pool
           steps:
-        postRouteTraffic: # steps after the traffic is routed, typically, these tasks monitor the health of the updated version for defined interval
+        postRouteTraffic: # steps after the traffic is routed, typically, these tasks monitor the health of the updated version for defined interval. executed once
           pool: pool
           steps:
         on:
@@ -681,7 +692,6 @@ stages:
 # deployment Job (rolling strategy)
 # this only works for environments using Virtual Machines
 # the maxParallel parameter specifies how many VMs will be updated at a time
-# all hooks are executed once per batch size
 stages:
 - stage: string
   jobs:
@@ -690,9 +700,15 @@ stages:
     strategy:
       rolling:
         maxParallel: 5 # can be specified in exact numbers (5) or percentages (10%)
+        preDeploy: # executed once per batch size
+        deploy: # executed once per batch size
+        routeTraffic: # executed once per batch size
+        postRouteTraffic: # executed once per batch size
+        on:
+          failure:
+          success:
 
 # deployment Job (canary strategy)
-# this executes preDeploy once, and then iterates through deploy, routeTraffic, and postRouteTraffic as many times as necessary
 # the increments parameters specifies how many resources to do per iteration
 stages:
 - stage: string
@@ -702,6 +718,13 @@ stages:
     strategy:
       canary:
         increments: [10,20] # deploy to 10% and verify success, then deploy to 20% and verify success, if everything is good then deploy again to 100%
+        preDeploy: # executed once
+        deploy: # executed with each iteration
+        routeTraffic: # executed with each iteration
+        postRouteTraffic: # executed with each iteration
+        on:
+          failure:
+          success:
 
 # defining a Job template
 stages:
@@ -713,7 +736,7 @@ stages:
       key: value
 ```
 
-Steps
+## steps
 - The smallest building block of a Pipeline
 - Steps can run a Task
   - Tasks are pre-packaged scripts or procedures to do something (install Java, run a Gradle build, etc.)
