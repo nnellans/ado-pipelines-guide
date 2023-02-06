@@ -55,8 +55,8 @@ appendCommitMessageToRunName: boolean # is the latest Git commit message appende
 ## trigger (aka CI Trigger)
 - Looks for pushes to branches and/or tags on the repo where the pipeline is stored
 - This field is optional.  By default, a push to any branch of the repo will cause the pipeline to be triggered
-- You cannot use variables in `triggers`, as variables are evaluated after triggers are evaluated
-- `triggers` are not supported inside template files
+- You cannot use variables in `trigger`, as variables are evaluated after triggers are evaluated
+- `trigger` is not supported inside template files
 
 There are 3 ways to define `trigger`:
 ```yaml
@@ -311,7 +311,7 @@ resources:
     branch: string
     trigger: boolean # when this artifact is updated, is it allowed to trigger this pipeline? optional, default is none. accepts only none or true
 ```
-- Triggers are only supported for hosted Jenkins, where Azure DevOps has line of sight with Jenkins server
+- `trigger` is only supported for hosted Jenkins, where Azure DevOps has line of sight with Jenkins server
 - Build resources are not automatically downloaded by Jobs.  To consume Builds use a [downloadBuild](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download-build) Step / [DownloadBuildArtifacts](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-build-artifacts-v1) Task
 
 ### <ins>Resources: containers</ins>
@@ -420,7 +420,8 @@ resources:
     tags: # List of tags required on the other pipeline. optional
     - string
 ```
-- Pipeline resources are not automatically downloaded by Traditional Jobs, but they are automatically downloaded by Deployment Jobs.  To consume Pipeline resources in Traditional Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step / [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
+- Pipeline artifacts are not automatically downloaded by Traditional Jobs.  To consume Pipeline resources in Traditional Jobs use a [Download](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-download) Step / [DownloadPipelineArtifact](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/download-pipeline-artifact-v2) Task
+- Pipeline artifacts are automatically downloaded by Deployment Jobs, but only in the `deploy` lifecycle hook.  To disable this, you can insert a `download: none` Step
 - When an update to the Pipeline `resource` causes the parent Pipeline to trigger:
   - If the Pipeline `resource` and the parent Pipeline are from the same repository, and the Pipeline `resource` triggers because of an update to Branch A, then the parent Pipeline will be run using that same Branch A.
   - If the Pipeline `resource` and the parent Pipeline are from different repositories, then the parent Pipeline will always run using its own default Branch, it doesn't matter which branch the Pipeline `resource` was updated on
@@ -571,7 +572,7 @@ stages:
   lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
   templateContext:  # additional Stage-related info you can pass into an extended template
   jobs:
-  - job: # standard job
+  - job: # traditional job
   - deployment: # deployment job
   - template: # job template
 
@@ -594,15 +595,17 @@ stages:
   - 360 minutes on Microsoft-hosted Agents for a public project and public repo
   - 60 minutes on Microsoft-hosted Agents for a private project and private repo
 - There are a handful of supported [Agentless Jobs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?#agentless-tasks)
-- Jobs come in 2 different forms: traditional Jobs and deployment Jobs
+- Jobs come in 2 different forms:
   - Traditional Jobs:
     - Support the optional `matrix` and `parallel` strategies
     - Have a hidden Step for `checkout: self`. This behavior can be disabled by specifying a Step for `checkout: none`
+    - Do NOT have a hidden Step for `download`, so you must specify this Step if needed
   - Deployment Jobs:
     - Deploy to an Azure DevOps `environment`
     - Provide a deployment history
     - Support the `runOnce`, `rolling`, and `canary` strategies
     - Do NOT have a hidden Step for `checkout: self`, so you must specify this Step if needed
+    - Have a hidden Step for `download` (inside the `deploy` lifecycle hook only?). This behavior can be disabled by specifying a Step for `download: none`
   - Both types of Jobs can exist in the same Stage
 
 ```yaml
