@@ -15,6 +15,6 @@ These Federated Credentials could be used for things like Service Connections in
 - Assign the new Managed Identity to an RBAC role on your Subscription (contributor, owner, etc.)
 - Create a new Service Connection in Azure DevOps
   - Choose `Azure Resource Manager` then choose `Workload Identity federation (manual)`
-  - Copy the `issuer` and `subject` values that are shown, update your Managed Identity's Federated Credential with these values (one option is to update your Bicep files and re-deploy)
   - Fill in all the required information, including Subscription, Tenant, etc.
   - For `Service Principal Id` enter the `Client ID` of your Managed Identity
+  - Copy the `issuer` and `subject` values that are shown, update your Managed Identity's Federated Credential with these values
