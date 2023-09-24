@@ -15,23 +15,13 @@ param location string = resourceGroup().location
 @description('Optional. Tags to assign to the Identity. Default is no tags')
 param tags object = {}
 
-// Custom type used by the 'fedCreds' param
-type fedCredsType = {
-  @description('The name of the Federated Credential')
-  name: string
-  
-  @description('Audiences to use for the Federated Credential. Must be an array of strings')
-  audiences: array
-  
-  @description('Issuer to use for the Federated Credential')
-  issuer: string
-  
-  @description('The subject to use for the Federated Credential')
-  subject: string
-}[]
-
 @description('Optional. An array of objects defining the Federated Credential(s) for the Identity. Default is no credentials')
-param fedCreds fedCredsType = []
+param fedCreds {
+  name: string
+  audiences: array
+  issuer: string
+  subject: string
+}[] = []
 
 //-----------------------
 // Resources
