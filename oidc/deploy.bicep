@@ -18,7 +18,7 @@ param tags object = {}
 @description('Optional. An array of objects defining the Federated Credential(s) for the Identity. Default is no credentials')
 param fedCreds {
   name: string
-  audiences: array
+  audiences: string[]
   issuer: string
   subject: string
 }[] = []
