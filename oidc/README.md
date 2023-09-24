@@ -19,3 +19,6 @@ These Federated Credentials could be used for things like Service Connections in
   - For `Service Principal Id` enter the `Client ID` of your Managed Identity
   - Copy the `issuer` and `subject` values that are shown, update your Managed Identity's Federated Credential with these values
 - Click save and if you did everything correctly you should have a new Service Connection that is tied to a Managed Identity using Federated Credentials. No more passwords, yay!
+
+## Sources
+- [Manually configure Azure Resource Manager workload identity service connections](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/configure-workload-identity)
