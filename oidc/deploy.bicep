@@ -16,7 +16,7 @@ param location string = resourceGroup().location
 param tags object = {}
 
 @description('Optional. An array of objects defining the Federated Credential(s) for the Identity. Default is no credentials')
-param fedCreds {
+param federatedCredentials {
   name: string
   audiences: string[]
   issuer: string
@@ -33,7 +33,7 @@ resource uamIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
 }
 
 @batchSize(1) // Can only deploy 1 Federated Credential at a time
-resource fedCred 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2023-01-31' = [for item in fedCreds: {
+resource federatedCredential 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2023-01-31' = [for item in federatedCredentials: {
   parent: uamIdentity
   
   name: item.name
@@ -43,3 +43,9 @@ resource fedCred 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIden
     subject: item.subject
   }
 }]
+
+//-----------------------
+// Outputs
+//-----------------------
+output name string = uamIdentity.name
+output resourceId string = uamIdentity.id
