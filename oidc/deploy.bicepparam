@@ -18,8 +18,8 @@ param fedCreds = [
     audiences: ['api://AzureADTokenExchange']
     issuer: 'https://token.actions.githubusercontent.com'
     subject: 'repo:<MyOrg>/<MyRepo>:environment:<MyEnv>'
-    // subject: repo:<MyOrg>/<MyRepo>:ref:refs/heads/<MyBranch>
     // subject: repo:<MyOrg>/<MyRepo>:pull_request
+    // subject: repo:<MyOrg>/<MyRepo>:ref:refs/heads/<MyBranch>
     // subject: repo:<MyOrg>/<MyRepo>:ref:refs/tags/<MyTag>
   }
 ]
