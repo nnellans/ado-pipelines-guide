@@ -4,7 +4,7 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
 
 ### Windows Container Agents
 - Windows Container Agents are based on the Windows Server Core image and run on a Windows host
-  - See the example Windows Server Core 2019 [Dockerfile](/self-hosted-agents-docker/windows/Dockerfile)
+  - See the example Windows Server Core 2022 [Dockerfile](/self-hosted-agents-docker/windows/Dockerfile)
 - Requirements for the Windows host:
   - Enable Hyper-V
   - Install Docker for Windows
@@ -13,9 +13,9 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
 ---
 
 ### Linux Container Agents
-- Linux Container Agents are based on the Ubuntu image and run on a Linux host
-  - See the example Ubuntu 18.04 [Dockerfile](/self-hosted-agents-docker/ubuntu/Dockerfile-1804)
-  - See the example Ubuntu 20.04 [Dockerfile](/self-hosted-agents-docker/ubuntu/Dockerfile-2004)
+- Linux Container Agents are based on either the Ubuntu or Alpine image and run on a Linux host
+  - See the example Ubuntu 22.04 [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-ubuntu-2204)
+  - See the example Alpine [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-alpine)
 
 ---
 
