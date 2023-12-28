@@ -6,7 +6,7 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
 - Windows Container Agents are based on the Windows Server Core image and run on a Windows host
   - See the example Windows Server Core 2022 [Dockerfile](/self-hosted-agents-docker/windows/Dockerfile)
 - Build the Windows image:
-  `docker build --tag "azp-agent:windows" --file "./Dockerfile" .` 
+  `docker build --tag "azp-agent:windows" .` 
 - Running the Windows image:
   ```powershell
   docker run \
@@ -30,7 +30,7 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
   - See the example Ubuntu 22.04 [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-ubuntu-2204)
   - See the example Alpine [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-alpine)
 - Build the Linux image:
-  `docker build --tag "azp-agent:linux" --file "./Dockerfile" .`
+  `docker build --tag "azp-agent:linux" .`
 - Running the Linux image:
   ```shell
   docker run \
