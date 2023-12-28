@@ -17,6 +17,7 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
     --name "azp-agent-windows" `
     azp-agent:windows
   ```
+  - `AZP_TOKEN` must be a PAT that has the scope of `Agent Pools (read, manage)`
   - If you want a fresh agent container for every pipeline job, pass the `--once` flag to the `run` command
 - Requirements for the Windows host:
   - Enable Hyper-V
@@ -41,6 +42,7 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
     --name "azp-agent-linux" \
     azp-agent:linux
   ```
+  - `AZP_TOKEN` must be a PAT that has the scope of `Agent Pools (read, manage)`
   - If you want a fresh agent container for every pipeline job, pass the `--once` flag to the `run` command.
 
 ---
