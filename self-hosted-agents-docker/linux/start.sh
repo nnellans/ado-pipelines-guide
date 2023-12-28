@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# Taken from https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/docker
+
 if [ -z "${AZP_URL}" ]; then
   echo 1>&2 "error: missing AZP_URL environment variable"
   exit 1
