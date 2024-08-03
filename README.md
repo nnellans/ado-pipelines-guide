@@ -570,6 +570,7 @@ stages:
   - stageName1
   - stageName2
   dependsOn: stageName # second form. a stage which must complete before this one. optional
+  isSkippable: boolean # to prevent skipping this stage, set to false. optional, default is true
   condition: string # evaluate this expression to determine whether to run this stage
   variables: variables # specify any stage-level variables. optional
   lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
