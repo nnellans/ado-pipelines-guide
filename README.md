@@ -1,6 +1,6 @@
 # Azure DevOps YAML Pipelines Guide
 
-- Version: 1.0.0
+- Version: 1.1.0
 - Author:
   - Nathan Nellans
   - Email: me@nathannellans.com
@@ -540,14 +540,34 @@ resources:
 - When creating the Webhook in the external service, make sure to point it at <br />`https://dev.azure.com/yourOrgName/_apis/public/distributedtask/webhooks/yourWebhookSymbolicName?api-version=6.0-preview`
 
 ## lockBehavior
-This lets you control the behavior of exclusive lock checks on protected resources.  Protected resources include: Agent Pools, Secret Variables (inside Variable Groups), Secure Files, Service Connections, Environments, and Repositories.
+This is a 2 step process.
 
-If a Protected Resource is configured with an exclusive lock check that means only one run of the Pipeline can access that Protected Resource at a time.  While that one run of the Pipeline is executing there may be more runs of the Pipeline that are queued up and waiting to go.  What happens with these queued Pipelines depends on the value of the `lockBehavior` parameter.
+First, you must define an Exclusive Lock on a supported resource. The types of resources that support Exclusive Locks are:
+- Agent Pools
+  - Project Settings > Agent pools > your-Pool > Approvals and checks > Add check > Exclusive Lock
+- Repositories
+  - Project Settings > Repositories > your-Repo > Approvals and checks > Add check > Exclusive Lock
+- Service Connections
+  - Project Settings > Service connections > your-Connection > Approvals and checks > Add check > Exclusive Lock
+- Secret Variables in Variable Groups
+  - Pipelines > Library > Variable groups > your-Group > Approvals and checks > Add check > Exclusive Lock
+  - This is only for variables marked as secret, as access to nonsecret variables isn't limited by checks.
+- Secure Files
+  - Pipelines > Library > Secure files > your-File > Approvals and checks > Add check > Exclusive Lock
+- Environments
+  - Pipelines > Environments > your-Environment > Approvals and checks > Add check > Exclusive Lock
+- Stages
+  - If you have a Stage with an ID and specify its `lockBehavior` property, a lock is automatically created for that Stage
+
+Second, you must define settings for `lockBehavior`:
+
+If a Protected Resource is configured with an exclusive lock check, then only one run of the Pipeline can access that Protected Resource at a time.  While that one run of the Pipeline is executing there may be more runs of the Pipeline that are queued up and waiting to go.  What happens with these queued Pipelines depends on the value of the `lockBehavior` parameter.
 
 ```yaml
 lockBehavior: string # optional, default value is runLatest. accepts only sequential or runLatest
 ```
 - `runLatest` all runs of the Pipeline that are waiting are cancelled, except for the latest run
+  - An exemption is when you create an Exclusive Lock on a Stage.  In this case, only runs of the Pipeline on the same branch will be cancelled
 - `sequential` all runs of the Pipeline are allowed to execute one-by-one when it is their turn
 
 lockBehavior can be defined at multiple places in your pipeline:<br />![](images/pipeline-lockbehavior.png)
@@ -573,6 +593,7 @@ A Pipeline contains one or more Stages.  Each Stage contains one or more Jobs.  
 stages:
 - stage: string # the symoblic name used to reference this stage. must be the first property
   displayName: string # human-readable name for the stage. optional
+  trigger: manual # specify this to require manual approval of this stage. optional
   pool: pool # specify the stage-level pool where jobs in this stage will run. optional
   dependsOn: # first form. any stages which must complete before this one. optional
   - stageName1
