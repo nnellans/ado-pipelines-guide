@@ -1,6 +1,6 @@
 # Azure DevOps YAML Pipelines Guide
 
-- Version: 1.1.0
+- Version: 1.1.1
 - Author:
   - Nathan Nellans
   - Email: me@nathannellans.com
@@ -587,6 +587,10 @@ A Pipeline contains one or more Stages.  Each Stage contains one or more Jobs.  
   - Each Stage has a hidden, implicit condition that the previous Stage must complete successfully
   - By adding a `condition` to a Stage you could force a Stage to run, even if the previous Stage fails
   - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
+- Adding `trigger: manual` to a Stage will make it so a manual approval of that Stage is required
+  - Manually triggered Stages have no dependencies
+  - Manually triggered Stages can be run at any time
+  - A pipeline run will complete when there are only manually triggered Stages left to execute
 
 ```yaml
 # defining a Stage
