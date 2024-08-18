@@ -15,7 +15,7 @@ if (-not (Test-Path Env:AZP_TOKEN_FILE)) {
     exit 1
   }
 
-  $Env:AZP_TOKEN_FILE = "\azp\.token"
+$Env:AZP_TOKEN_FILE = "\azp\.token"
   $Env:AZP_TOKEN | Out-File -FilePath $Env:AZP_TOKEN_FILE
 }
 
@@ -50,22 +50,13 @@ Expand-Archive -Path "agent.zip" -DestinationPath "\azp\agent"
 try {
   Print-Header "3. Configuring Azure Pipelines agent..."
 
-  .\config.cmd --unattended `
-    --agent "$(if (Test-Path Env:AZP_AGENT_NAME) { ${Env:AZP_AGENT_NAME} } else { hostname })" `
-    --url "$(${Env:AZP_URL})" `
-    --auth PAT `
-    --token "$(Get-Content ${Env:AZP_TOKEN_FILE})" `
-    --pool "$(if (Test-Path Env:AZP_POOL) { ${Env:AZP_POOL} } else { 'Default' })" `
-    --work "$(if (Test-Path Env:AZP_WORK) { ${Env:AZP_WORK} } else { '_work' })" `
-    --replace
+.\config.cmd --unattended --agent "$(if (Test-Path Env:AZP_AGENT_NAME) { ${Env:AZP_AGENT_NAME} } else { hostname })" --url "$(${Env:AZP_URL})" --auth PAT --token "$(Get-Content ${Env:AZP_TOKEN_FILE})" --pool "$(if (Test-Path Env:AZP_POOL) { ${Env:AZP_POOL} } else { 'Default' })" --work "$(if (Test-Path Env:AZP_WORK) { ${Env:AZP_WORK} } else { '_work' })" --replace
 
-  Print-Header "4. Running Azure Pipelines agent..."
+Print-Header "4. Running Azure Pipelines agent..."
 
-  .\run.cmd
+.\run.cmd
 } finally {
   Print-Header "Cleanup. Removing Azure Pipelines agent..."
 
-  .\config.cmd remove --unattended `
-    --auth PAT `
-    --token "$(Get-Content ${Env:AZP_TOKEN_FILE})"
+.\config.cmd remove --unattended --auth PAT --token "$(Get-Content ${Env:AZP_TOKEN_FILE})"
 }
