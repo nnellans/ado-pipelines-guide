@@ -713,6 +713,12 @@ stages:
       pools: [ string ] # Pool names, typically when using a matrix strategy for the job
     templateContext:  # additional Deployment-related info you can pass into an extended template
     environment: deploymentEnvironment  # environment name to run the job against, and optionally a specific resource in the environment. example: environment-name.resource-name
+    environment: # full syntax
+      name: string # name of environment
+      resourceName: string # name of resource
+      resourceId: string # id of resource
+      resourceType: string # type of environment resource
+      tags: string # list of tag filters
     strategy: # execution strategy for this deployment. Options: runOnce, rolling, canary
       runOnce:
         preDeploy: # steps that initialize resources before application deployment starts. executed once
