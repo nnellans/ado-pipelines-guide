@@ -175,12 +175,18 @@ parameters:
   displayName: string # the human-readable name shown in the Azure DevOps UI. optional, default is same as name
   type: string # see more below. required
   default: 'someValue'
-  values:
+  values: # including this creates a dropdown box allowing you to select 1 of the options
   - 'first allowed value'
   - 'second allowed value'
+- name: stringList
+  type: stringList
+  values: # this creates a multi-select box allowing you to select 1 or more of the options
+  - 'some value'
+  - 'another value'
+  - 'last value'
 ```
 - Parameters must have a `type`, the accepted values are:
-  - `boolean`, `number`, `object`, `string`
+  - `boolean`, `number`, `object`, `string`, `stringList`
   - `environment`, `filePath`, `pool`, `secureFile`, `serviceConnection`
   - `container`, `containerList`, `deployment`, `deploymentList`, `job`, `jobList`, `stage`, `stageList`, `step`, `stepList`
 - A parameter cannot be optional.  This means you must provide a value when running the pipeline manually, or the parameter must be configured with a `default` value. If neither of those are supplied, then the first value from the allowed `values` list will be used
