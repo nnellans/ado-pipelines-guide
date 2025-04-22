@@ -12,7 +12,7 @@ param fedCreds = [
     audiences: ['api://AzureADTokenExchange']
     issuer: 'https://login.microsoftonline.com/<MyTenantID>/v2.0' // This is the ID of your EntraID Tenant
     subject: '<MyEntraPrefix>/sc/<MyOrgID>/<MyServiceConnectionID>'
-    // Old Issuers & Subject:  https://learn.microsoft.com/en-us/azure/devops/release-notes/2025/sprint-253-update#workload-identity-federation-uses-entra-issuer
+    // Old Issuer & Subject:  https://learn.microsoft.com/en-us/azure/devops/release-notes/2025/sprint-253-update#workload-identity-federation-uses-entra-issuer
     // issuer: 'https://vstoken.dev.azure.com/<MyOrgGUID>' // This is the GUID or your Azure DevOps Organization
     // subject: 'sc://<MyOrgName>/<MyProjectName>/<MyServiceConnectionName>'
   }
