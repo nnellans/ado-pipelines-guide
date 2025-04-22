@@ -10,16 +10,23 @@ param fedCreds = [
   {
     name: 'AzureDevOps-FederatedCredential'
     audiences: ['api://AzureADTokenExchange']
-    issuer: 'https://vstoken.dev.azure.com/<MyOrgGUID>' // This is the GUID or your Azure DevOps Organization
-    subject: 'sc://<MyOrgName>/<MyProjectName>/<MyServiceConnectionName>'
+    issuer: 'https://login.microsoftonline.com/<MyTenantID>/v2.0' // This is the ID of your EntraID Tenant
+    subject: '<MyEntraPrefix>/sc/<MyOrgID>/<MyServiceConnectionID>'
+    // Old Issuers & Subject:  https://learn.microsoft.com/en-us/azure/devops/release-notes/2025/sprint-253-update#workload-identity-federation-uses-entra-issuer
+    // issuer: 'https://vstoken.dev.azure.com/<MyOrgGUID>' // This is the GUID or your Azure DevOps Organization
+    // subject: 'sc://<MyOrgName>/<MyProjectName>/<MyServiceConnectionName>'
   }
   {
     name: 'GitHubActions-FederatedCredential'
     audiences: ['api://AzureADTokenExchange']
     issuer: 'https://token.actions.githubusercontent.com'
+    // Example pointing at an environment
     subject: 'repo:<MyOrg>/<MyRepo>:environment:<MyEnv>'
-    // subject: repo:<MyOrg>/<MyRepo>:pull_request
-    // subject: repo:<MyOrg>/<MyRepo>:ref:refs/heads/<MyBranch>
-    // subject: repo:<MyOrg>/<MyRepo>:ref:refs/tags/<MyTag>
+    // Example pointing at pull requests
+    subject: repo:<MyOrg>/<MyRepo>:pull_request
+    // Example pointing at a branch
+    subject: repo:<MyOrg>/<MyRepo>:ref:refs/heads/<MyBranch>
+    // Example pointing at a tag
+    subject: repo:<MyOrg>/<MyRepo>:ref:refs/tags/<MyTag>
   }
 ]
