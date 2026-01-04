@@ -52,6 +52,9 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
 | --- | --- |
 | AZP_URL	| The URL of the Azure DevOps/Azure DevOps Server instance |
 | AZP_TOKEN	| Personal Access Token (PAT) with scope of Agent Pools (read, manage) |
+| AZP_CLIENTID | Client ID of Service Principal |
+| AZP_CLIENTSECRET | Client Secret of Service Principal |
+| AZP_TENANTID | Tenant ID of Service Principal |
 | AZP_AGENT_NAME | Agent name (default value: the container hostname) |
 | AZP_POOL | Agent pool name (default value: `Default`) |
 | AZP_WORK | Agent working directory (default value: `_work`) |
