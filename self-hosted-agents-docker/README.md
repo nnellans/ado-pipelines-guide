@@ -29,6 +29,7 @@ The Dockerfiles and scripts found in this folder are taken directly from the [Mi
 ### Linux Container Agents
 - Linux Container Agents are based on either the Ubuntu or Alpine image and run on a Linux host
   - See the example Ubuntu 22.04 [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-ubuntu-2204)
+  - See the example Ubuntu 24.04 [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-ubuntu-2404)
   - See the example Alpine [Dockerfile](/self-hosted-agents-docker/linux/Dockerfile-alpine)
 - Build the Linux image:
   `docker build --tag "azp-agent:linux" .`
