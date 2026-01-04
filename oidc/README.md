@@ -21,4 +21,4 @@ These Federated Credentials could be used for things like Service Connections in
 4. Click save, and if you did everything correctly you should have a new Service Connection that is tied to a Managed Identity using Federated Credentials. No more passwords, yay!
 
 ## Sources
-- [Manually configure Azure Resource Manager workload identity service connections](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/configure-workload-identity)
+- [Manually set an ARM workload identity service connection](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/configure-workload-identity)
