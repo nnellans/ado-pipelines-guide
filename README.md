@@ -593,6 +593,12 @@ A Pipeline contains one or more Stages.  Each Stage contains one or more Jobs.  
   - Each Stage has a hidden, implicit condition that the previous Stage must complete successfully
   - By adding a `condition` to a Stage you could force a Stage to run, even if the previous Stage fails
   - Adding a `condition` to a Stage will remove the implicit condition that says the previous Stage must succeed.  Therefore, it is common to use a condition of `and(succeeded(),yourCustomCondition)` which adds the implicit success condition back, as well as adds your own custom condition.  Otherwise, this Stage will run regardless of the outcome of the preceding Stage
+- For viewing purposes, you can group Stages together with the `group` setting
+  - The value can contain multiple levels of nesting, for example `group: level1\level2\level3`
+  - On the "Stages" view in the Azure DevOps UI the Stages will be grouped together based on the value you set here
+  - For groupings to work, the `stage` key must have a value
+    - `- stage:` will NOT work
+    - `- stage: someValue` works
 - Adding `trigger: manual` to a Stage will make it so a manual approval of that Stage is required
   - Manually triggered Stages have no dependencies
   - Manually triggered Stages can be run at any time
@@ -602,6 +608,7 @@ A Pipeline contains one or more Stages.  Each Stage contains one or more Jobs.  
 # defining a Stage
 stages:
 - stage: string # the symoblic name used to reference this stage. must be the first property
+  group: string\string\string # specify this to group stages together. optional
   displayName: string # human-readable name for the stage. optional
   trigger: manual # specify this to require manual approval of this stage. optional
   pool: pool # specify the stage-level pool where jobs in this stage will run. optional
