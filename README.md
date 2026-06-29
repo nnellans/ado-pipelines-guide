@@ -14,6 +14,9 @@
 > [!IMPORTANT]
 > This is a live document. Some of the sections are still a work in progress. I will be continually updating it over time.
 
+> [!TIP]
+> AI was not used in the creation of this guide.
+
 > [!NOTE]
 > Azure DevOps has two different types of Pipelines.  First, there are the "*Classic UI*" Pipelines, these come in both Build and Release forms.  Second, there are the YAML Pipelines that are defined strictly in code.  This guide will only focus on the modern YAML Pipelines.  Microsoft has even [started to](https://learn.microsoft.com/en-us/azure/devops/release-notes/2023/sprint-225-update#disable-creation-of-classic-pipelines-for-new-organizations-pre-announcement) disable Classic Pipelines for new Organizations.
 
