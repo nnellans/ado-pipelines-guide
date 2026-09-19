@@ -1,6 +1,6 @@
 # Azure DevOps YAML Pipelines Guide
 
-- Version: 1.4.1
+- Version: 1.3.1
 - Author:
   - Nathan Nellans
   - Email: me@nathannellans.com
