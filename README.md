@@ -1,6 +1,6 @@
 # Azure DevOps YAML Pipelines Guide
 
-- Version: 1.3.0
+- Version: 1.4.1
 - Author:
   - Nathan Nellans
   - Email: me@nathannellans.com
@@ -346,7 +346,7 @@ resources:
     endpoint: string # the Docker Service Connection used to communicate with the private registry
     env: # variables to map into the container's environment
       string: string
-    mapDockerSocket: boolean # map the /var/run/docker.sock volume on container jobs? optional, default is true
+    mapDockerSocket: boolean # map the /var/run/docker.sock volume on container jobs? optional, default is false (starting with agent version 5.279.0)
     options: string # arguments to pass to the container at startup
     ports: # expose ports on the Container
     - '8080:80' # binds port 80 on the Container to port 8080 on the host Agent
