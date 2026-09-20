@@ -65,7 +65,7 @@ try {
 } finally {
   Print-Header "Cleanup. Removing Azure Pipelines agent..."
 
-  .\config.cmd remove --unattended `
-    --auth PAT `
-    --token "$(Get-Content ${Env:AZP_TOKEN_FILE})"
+.\config.cmd remove --unattended `
+  --auth PAT `
+  --token "$(Get-Content ${Env:AZP_TOKEN_FILE})"
 }
