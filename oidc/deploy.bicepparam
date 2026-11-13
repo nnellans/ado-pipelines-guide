@@ -6,24 +6,16 @@ param tags = {
   tagName1: 'tagValue1'
   tagName2: 'tagValue2'
 }
-param fedCreds = [
+param federatedCredentials = [
   {
     name: 'AzureDevOps-FederatedCredential'
     audiences: ['api://AzureADTokenExchange']
     issuer: 'https://login.microsoftonline.com/<MyTenantID>/v2.0'
     subject: '<MyEntraPrefix>/sc/<MyDevopsOrgID>/<MyServiceConnectionID>'
+
     // DO NOT USE - Old Issuer & Subject
+    // More info: https://learn.microsoft.com/en-us/azure/devops/release-notes/2025/sprint-253-update#workload-identity-federation-uses-entra-issuer
     // issuer: 'https://vstoken.dev.azure.com/<MyDevopsOrgGUID>'
     // subject: 'sc://<MyDevopsOrgName>/<MyProjectName>/<MyServiceConnectionName>'
-    // More info: https://learn.microsoft.com/en-us/azure/devops/release-notes/2025/sprint-253-update#workload-identity-federation-uses-entra-issuer
-  }
-  {
-    name: 'GitHubActions-FederatedCredential'
-    audiences: ['api://AzureADTokenExchange']
-    issuer: 'https://token.actions.githubusercontent.com'
-    subject: 'repo:<MyOrg>/<MyRepo>:environment:<MyEnv>'        // Example pointing at an environment
-    subject: 'repo:<MyOrg>/<MyRepo>:pull_request'               // Example pointing at pull requests
-    subject: 'repo:<MyOrg>/<MyRepo>:ref:refs/heads/<MyBranch>'  // Example pointing at a branch
-    subject: 'repo:<MyOrg>/<MyRepo>:ref:refs/tags/<MyTag>'      // Example pointing at a tag
   }
 ]
